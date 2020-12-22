@@ -43,8 +43,8 @@ if __name__ == "__main__":
     parser.add_argument('--dir', help='Directory of Images')
     opt = parser.parse_args()
 
-    # write_video(opt.dir, "../videos/kitti.avi")
+    # write_video(opt.dir, "../videos/tum_rgb_xyz.avi")
 
-    read_video("../videos/kitti.avi")
+    read_video("../videos/tum_rgb_xyz.avi")
 
 
