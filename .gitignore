@@ -3,3 +3,6 @@
 *yolov5*
 *.idea*
 Data*
+*__init__.py
+*__pycache__*
+
