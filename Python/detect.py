@@ -4,12 +4,12 @@ import time
 from pathlib import Path
 
 import cv2
-import numpy as np
 import open3d as o3d
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
 
+from Instance import *
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
 from utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, \
@@ -30,26 +30,65 @@ def init_calib():
     return P2, R0_rect, Tr_velo_to_cam
 
 
-def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
+def get_lidar_from_file(file):
     scan = np.fromfile(file, dtype=np.float32)
     scan = np.array(scan, dtype=np.float64)
     scan = scan.reshape((-1, 4))
     xyz = scan[:, :3]
-    xyz = xyz[::10]
+    # xyz = xyz[::4]
+    return xyz
 
+
+def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
+    xyz = get_lidar_from_file(file)
     vel_points = np.insert(xyz, 3, 1, axis=1).T
     vel_points = np.delete(vel_points, np.where(vel_points[0, :] < 0), axis=1)
-    cam_points = P2 * R0_rect * Tr_velo_to_cam * vel_points
-    cam_points = np.delete(cam_points, np.where(cam_points[2, :] < 0)[1], axis=1)
-    cam_points[:2] /= cam_points[2, :]
 
+    cloud = vel_points.copy()
+    cloud = np.delete(cloud, 3, axis=0)
+
+    cam_points = P2 * R0_rect * Tr_velo_to_cam * vel_points
+    cloud = np.delete(cloud, np.where(cam_points[2, :] < 0)[1], axis=1)
+    cam_points = np.delete(cam_points, np.where(cam_points[2, :] < 0)[1], axis=1)
+
+    cam_points[:2] /= cam_points[2, :]
     u, v, z = cam_points
     u_out = np.logical_or(u < 0, u > width)
     v_out = np.logical_or(v < 0, v > height)
     outlier = np.logical_or(u_out, v_out)
+    cloud = np.delete(cloud, np.where(outlier), axis=1)
     cam_points = np.delete(cam_points, np.where(outlier), axis=1)
 
-    return xyz, cam_points
+    return xyz, cloud.T, cam_points
+
+
+def displayApp(displayState, im0, pcd, vis):
+    # im0 = cv2.resize(im0, (im0.shape[1], im0.shape[0]))
+    print(displayState)
+    cv2.imshow("Image", im0)
+    code = 0
+    if displayState > 0:
+        code = cv2.waitKeyEx(1)
+        if code == 32:  # PAUSE: Spacebar
+            displayState *= -1  # PAUSED: -1
+        elif code == 99:  # CYCLE_PCD: 'C'
+            if displayState == 1:
+                displayState = 2
+            elif displayState == 2:
+                displayState = 1
+
+    elif displayState < 0:
+        while True:
+            vis.update_geometry(pcd)
+            vis.poll_events()
+            vis.update_renderer()
+            code = cv2.waitKeyEx(1)
+            if code == 32 or code == ord('q'):
+                displayState *= -1
+                break
+    if code == ord('q'):  # q to quit
+        raise StopIteration
+    return displayState
 
 
 def detect(save_img=False):
@@ -89,16 +128,16 @@ def detect(save_img=False):
     pcd = o3d.geometry.PointCloud()
     axes = o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0))
 
-    dir = opt.lidar
-    lidar = os.listdir(dir)
-    lidar = sorted(lidar)
-    file = dir + lidar[0]
-    scan = np.fromfile(file, dtype=np.float32)
-    scan = scan.reshape((-1, 4))
-    xyz = scan[:, :3]
+    lidar = sorted(os.listdir(opt.lidar))
+    file = opt.lidar + lidar[0]
+    xyz = get_lidar_from_file(file)
     pcd.points = o3d.utility.Vector3dVector(xyz)
     vis.add_geometry(pcd)
     vis.add_geometry(axes)
+
+    objects = []
+    dims = (376, 1241, 3)
+    displayState = 1
 
     f = open('labels.txt', 'w+')
     time_count = 0
@@ -107,8 +146,10 @@ def detect(save_img=False):
     _ = model(img.half() if half else img) if device.type != 'cpu' else None  # run once
     for path, img, im0s, vid_cap in dataset:
 
+        objects = []  # Should be outside this loop when MOT is performed.
+
         t1 = time_synchronized()
-        file = dir + lidar[time_count]
+        file = opt.lidar + lidar[time_count]
         time_count += 1
 
         img = torch.from_numpy(img).to(device)
@@ -120,6 +161,8 @@ def detect(save_img=False):
         pred = model(img, augment=opt.augment)[0]
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
 
+        xyz, cam_cloud, cam_points = get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, dims[1], dims[0])
+
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1
@@ -128,13 +171,16 @@ def detect(save_img=False):
                 p, s, im0 = Path(path), '', im0s
 
             s += '%gx%g ' % img.shape[2:]  # print string
-            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             if len(det):
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += '%g %ss, ' % (n, names[int(c)])  # add to string
                 for *xyxy, conf, cls in reversed(det):
+                    bbox = np.array(torch.tensor(xyxy).view(-1).tolist())
+                    object = Instance(len(objects), bbox, cls, conf)
+                    object.extract_bbox_lidar(cam_points, cam_cloud)
+                    objects.append(object)
                     if save_txt:  # Write to file
                         xywh = map(int, (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist())  # normalized xywh
                         line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
@@ -142,15 +188,32 @@ def detect(save_img=False):
 
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
-                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
+                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=2)
 
         # t1 = time_synchronized()
-        xyz, cam_points = get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, im0.shape[1], im0.shape[0])
-        pcd.points = o3d.utility.Vector3dVector(xyz)
+
+        object_cloud = []
+        object_colors = []
+        for object in objects:
+            objColor = np.repeat(np.array(
+                [[(object.id * 321 % 255) / 255, (object.id * 213 % 255) / 255, (object.id * 432 % 255) / 255]]),
+                object.lidar.shape[0], axis=0)
+            object_cloud.append(object.lidar)
+            object_colors.append(objColor)
+
+        if len(object_cloud) > 0 and displayState == 1:
+            object_cloud = np.vstack(object_cloud)
+            object_colors = np.vstack(object_colors)
+            pcd.points = o3d.utility.Vector3dVector(object_cloud)
+            pcd.colors = o3d.utility.Vector3dVector(object_colors)
+        elif displayState == 2:
+            pcd.points = o3d.utility.Vector3dVector(xyz)
+
         vis.update_geometry(pcd)
         vis.poll_events()
         vis.update_renderer()
-        u, v, z = cam_points
+
+        # u, v, z = cam_points
         # for i in range(u.shape[1]):
         #     cv2.circle(im0, (int(u[0, i]), int(v[0, i])), 2, (int(z[0, i] / 20 * 255), 200, int(z[0, i] / 20 * 255)),-1)
 
@@ -158,10 +221,7 @@ def detect(save_img=False):
         print('%sDone. (%.3fs)' % (s, t2 - t1))
 
         if view_img:
-            # im0 = cv2.resize(im0, (im0.shape[1], im0.shape[0]))
-            cv2.imshow("Image", im0)
-            if cv2.waitKey(1) == ord('q'):  # q to quit
-                raise StopIteration
+            displayState = displayApp(displayState, im0, pcd, vis)
 
     print('Done. (%.3fs)' % (time.time() - t0))
     f.close()
