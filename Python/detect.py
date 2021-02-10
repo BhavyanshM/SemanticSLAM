@@ -65,6 +65,8 @@ def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
 def displayApp(displayState, im0, pcd, vis):
     # im0 = cv2.resize(im0, (im0.shape[1], im0.shape[0]))
     print(displayState)
+    cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Image", (int(im0.shape[1]*2), int(im0.shape[0]*2)))
     cv2.imshow("Image", im0)
     code = 0
     if displayState > 0:
@@ -135,6 +137,16 @@ def detect(save_img=False):
     vis.add_geometry(pcd)
     vis.add_geometry(axes)
 
+    points = [[0, 0, 0]]
+    lines = []
+    line_colors = []
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(points)
+    line_set.lines = o3d.utility.Vector2iVector(lines)
+    line_set.colors = o3d.utility.Vector3dVector(line_colors)
+
+    vis.add_geometry(line_set)
+
     objects = []
     dims = (376, 1241, 3)
     displayState = 1
@@ -194,10 +206,19 @@ def detect(save_img=False):
 
         object_cloud = []
         object_colors = []
+        center_points = [[0,0,0]]
+        center_lines = []
+        line_colors = []
         for object in objects:
-            objColor = np.repeat(np.array(
-                [[(object.id * 321 % 255) / 255, (object.id * 213 % 255) / 255, (object.id * 432 % 255) / 255]]),
-                object.lidar.shape[0], axis=0)
+            clr =[(object.id * 321 % 255) / 255, (object.id * 213 % 255) / 255, (object.id * 432 % 255) / 255]
+            objColor = np.repeat(np.array([clr]), object.lidar.shape[0], axis=0)
+            center_lines.append([0, len(center_points)])
+            center_points.append(object.center)
+            line_colors.append(clr)
+            line_set.points = o3d.utility.Vector3dVector(center_points)
+            line_set.lines = o3d.utility.Vector2iVector(center_lines)
+            line_set.colors = o3d.utility.Vector3dVector(line_colors)
+
             object_cloud.append(object.lidar)
             object_colors.append(objColor)
 
@@ -209,6 +230,7 @@ def detect(save_img=False):
         elif displayState == 2:
             pcd.points = o3d.utility.Vector3dVector(xyz)
 
+        vis.update_geometry(line_set)
         vis.update_geometry(pcd)
         vis.poll_events()
         vis.update_renderer()
