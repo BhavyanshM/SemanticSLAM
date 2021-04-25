@@ -17,6 +17,7 @@ from utils.general import check_img_size, non_max_suppression, scale_coords, xyx
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, time_synchronized
 
+from registration import *
 
 def init_calib():
     kitti_data = open("../Python/calib/kitti_calib.txt").readlines()
@@ -137,6 +138,10 @@ def detect(save_img=False):
     vis.add_geometry(pcd)
     vis.add_geometry(axes)
 
+    previous_points = np.array([]) # for registration purposes.
+    sensorToWorldTransform = np.eye(4)
+    worldToSensorTransform = np.eye(4)
+
     points = [[0, 0, 0]]
     lines = []
     line_colors = []
@@ -234,6 +239,17 @@ def detect(save_img=False):
         vis.update_geometry(pcd)
         vis.poll_events()
         vis.update_renderer()
+
+        latest_points = np.vstack(center_points[1:])
+
+        if previous_points.shape[0] != 0:
+            P, Q = match_points(previous_points, latest_points)
+            R, t = align_icp(P,Q)
+            print("R:", R)
+            print("t:", t)
+        previous_points = latest_points.copy()
+
+        # print("Center Points:", latest_points)
 
         # u, v, z = cam_points
         # for i in range(u.shape[1]):
