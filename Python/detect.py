@@ -36,24 +36,35 @@ def get_lidar_from_file(file):
     scan = np.array(scan, dtype=np.float64)
     scan = scan.reshape((-1, 4))
     xyz = scan[:, :3]
-    # xyz = xyz[::4]
+    xyz = xyz[::4]
     return xyz
 
 
 def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
     xyz = get_lidar_from_file(file)
+
+    print("XYZ:", xyz.shape)
+
     vel_points = np.insert(xyz, 3, 1, axis=1).T
     vel_points = np.delete(vel_points, np.where(vel_points[0, :] < 0), axis=1)
 
     cloud = vel_points.copy()
     cloud = np.delete(cloud, 3, axis=0)
 
-    cam_points = P2 * R0_rect * Tr_velo_to_cam * vel_points
+    cam_points = P2 @ R0_rect @ Tr_velo_to_cam @ vel_points
+
+    print("Condition: ", np.where(cam_points[2, :] < 0))
+
     cloud = np.delete(cloud, np.where(cam_points[2, :] < 0)[1], axis=1)
     cam_points = np.delete(cam_points, np.where(cam_points[2, :] < 0)[1], axis=1)
 
     cam_points[:2] /= cam_points[2, :]
+
+    print("CamPoints:", cam_points.shape)
     u, v, z = cam_points
+
+    print("U:", u.shape)
+
     u_out = np.logical_or(u < 0, u > width)
     v_out = np.logical_or(v < 0, v > height)
     outlier = np.logical_or(u_out, v_out)
@@ -124,6 +135,11 @@ def detect(save_img=False):
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
 
     P2, R0_rect, Tr_velo_to_cam = init_calib()
+
+    print("P2", P2)
+    print("P2", R0_rect)
+    print("Tr_velo_to_cam", Tr_velo_to_cam)
+
     vis = o3d.visualization.Visualizer()
     vis.create_window()
     rend_opt = vis.get_render_option()
@@ -145,16 +161,16 @@ def detect(save_img=False):
     points = [[0, 0, 0]]
     lines = []
     line_colors = []
-    line_set = o3d.geometry.LineSet()
-    line_set.points = o3d.utility.Vector3dVector(points)
-    line_set.lines = o3d.utility.Vector2iVector(lines)
-    line_set.colors = o3d.utility.Vector3dVector(line_colors)
-
-    vis.add_geometry(line_set)
+    # line_set = o3d.geometry.LineSet()
+    # line_set.points = o3d.utility.Vector3dVector(points)
+    # line_set.lines = o3d.utility.Vector2iVector(lines)
+    # line_set.colors = o3d.utility.Vector3dVector(line_colors)
+    #
+    # vis.add_geometry(line_set)
 
     objects = []
     dims = (376, 1241, 3)
-    displayState = 1
+    displayState = 2
 
     f = open('labels.txt', 'w+')
     time_count = 0
@@ -220,9 +236,9 @@ def detect(save_img=False):
             center_lines.append([0, len(center_points)])
             center_points.append(object.center)
             line_colors.append(clr)
-            line_set.points = o3d.utility.Vector3dVector(center_points)
-            line_set.lines = o3d.utility.Vector2iVector(center_lines)
-            line_set.colors = o3d.utility.Vector3dVector(line_colors)
+            # line_set.points = o3d.utility.Vector3dVector(center_points)
+            # line_set.lines = o3d.utility.Vector2iVector(center_lines)
+            # line_set.colors = o3d.utility.Vector3dVector(line_colors)
 
             object_cloud.append(object.lidar)
             object_colors.append(objColor)
@@ -235,25 +251,28 @@ def detect(save_img=False):
         elif displayState == 2:
             pcd.points = o3d.utility.Vector3dVector(xyz)
 
-        vis.update_geometry(line_set)
+        # latest_points = np.vstack(center_points[1:])
+        #
+        # if previous_points.shape[0] != 0:
+        #     P, Q = match_points(previous_points, latest_points)
+        #     R, t = align_icp(P,Q)
+        #     print("R:", R)
+        #     print("t:", t)
+        # previous_points = latest_points.copy()
+
+        # frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=-t_fin)
+        # vis.add_geometry(frame, False)
+
+        # print("Center Points:", latest_points)
+        # vis.update_geometry(line_set)
         vis.update_geometry(pcd)
         vis.poll_events()
         vis.update_renderer()
 
-        latest_points = np.vstack(center_points[1:])
 
-        if previous_points.shape[0] != 0:
-            P, Q = match_points(previous_points, latest_points)
-            R, t = align_icp(P,Q)
-            print("R:", R)
-            print("t:", t)
-        previous_points = latest_points.copy()
-
-        # print("Center Points:", latest_points)
-
-        # u, v, z = cam_points
-        # for i in range(u.shape[1]):
-        #     cv2.circle(im0, (int(u[0, i]), int(v[0, i])), 2, (int(z[0, i] / 20 * 255), 200, int(z[0, i] / 20 * 255)),-1)
+        u, v, z = cam_points
+        for i in range(u.shape[1]):
+            cv2.circle(im0, (int(u[0, i]), int(v[0, i])), 1, (int(z[0, i] / 20 * 255), 200, int(z[0, i] / 20 * 255)),-1)
 
         t2 = time_synchronized()
         print('%sDone. (%.3fs)' % (s, t2 - t1))
