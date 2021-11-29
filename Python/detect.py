@@ -76,7 +76,6 @@ def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
 
 def displayApp(displayState, im0):
     # im0 = cv2.resize(im0, (im0.shape[1], im0.shape[0]))
-    print("Display Image")
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Image", (int(im0.shape[1]*2), int(im0.shape[0]*2)))
     cv2.imshow("Image", im0)
@@ -288,8 +287,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='../../../../Storage/Other/Temp/dataset/sequences/00/image_0',help='source')  # file/folder, 0 for webcam
-    parser.add_argument('--lidar', type=str, default='../../../../Storage/Other/Temp/dataset/velodyne_dataset/sequences/00/velodyne/', help='lidar')
+    parser.add_argument('--source', type=str, default='../../../../../../../Storage/Other/Temp/dataset/sequences/00/image_0',help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--lidar', type=str, default='../../../../../../../Storage/Other/Temp/dataset/velodyne_dataset/sequences/00/velodyne/', help='lidar')
 
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
