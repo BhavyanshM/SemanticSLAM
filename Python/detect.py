@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 import cv2
-import open3d as o3d
+# import open3d as o3d
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
@@ -20,9 +20,12 @@ from utils.torch_utils import select_device, time_synchronized
 from registration import *
 
 def init_calib():
-    kitti_data = open("../Python/calib/kitti_calib.txt").readlines()
+    kitti_data = open("calib.txt").readlines()
     calibs = {line.split(":")[0]: line.split(":")[1].strip('\n') for line in kitti_data}
     P2 = np.matrix([float(x) for x in calibs["P2"].split(' ')[1:]]).reshape(3, 4)
+
+    print("Calib:", calibs.keys())
+
     R0_rect = np.matrix([float(x) for x in calibs["R0_rect"].split(' ')[1:]]).reshape(3, 3)
     R0_rect = np.insert(R0_rect, 3, values=[0, 0, 0], axis=0)
     R0_rect = np.insert(R0_rect, 3, values=[0, 0, 0, 1], axis=1)
@@ -43,7 +46,7 @@ def get_lidar_from_file(file):
 def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
     xyz = get_lidar_from_file(file)
 
-    print("XYZ:", xyz.shape)
+    print("XYZ:", xyz.shape, end='\t')
 
     vel_points = np.insert(xyz, 3, 1, axis=1).T
     vel_points = np.delete(vel_points, np.where(vel_points[0, :] < 0), axis=1)
@@ -53,17 +56,14 @@ def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
 
     cam_points = P2 @ R0_rect @ Tr_velo_to_cam @ vel_points
 
-    print("Condition: ", np.where(cam_points[2, :] < 0))
+    # print("Condition: ", np.where(cam_points[2, :] < 0))
 
     cloud = np.delete(cloud, np.where(cam_points[2, :] < 0)[1], axis=1)
     cam_points = np.delete(cam_points, np.where(cam_points[2, :] < 0)[1], axis=1)
 
     cam_points[:2] /= cam_points[2, :]
 
-    print("CamPoints:", cam_points.shape)
     u, v, z = cam_points
-
-    print("U:", u.shape)
 
     u_out = np.logical_or(u < 0, u > width)
     v_out = np.logical_or(v < 0, v > height)
@@ -74,9 +74,9 @@ def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
     return xyz, cloud.T, cam_points
 
 
-def displayApp(displayState, im0, pcd, vis):
+def displayApp(displayState, im0):
     # im0 = cv2.resize(im0, (im0.shape[1], im0.shape[0]))
-    print(displayState)
+    print("Display Image")
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Image", (int(im0.shape[1]*2), int(im0.shape[0]*2)))
     cv2.imshow("Image", im0)
@@ -93,9 +93,9 @@ def displayApp(displayState, im0, pcd, vis):
 
     elif displayState < 0:
         while True:
-            vis.update_geometry(pcd)
-            vis.poll_events()
-            vis.update_renderer()
+            # vis.update_geometry(pcd)
+            # vis.poll_events()
+            # vis.update_renderer()
             code = cv2.waitKeyEx(1)
             if code == 32 or code == ord('q'):
                 displayState *= -1
@@ -140,19 +140,19 @@ def detect(save_img=False):
     print("P2", R0_rect)
     print("Tr_velo_to_cam", Tr_velo_to_cam)
 
-    vis = o3d.visualization.Visualizer()
-    vis.create_window()
-    rend_opt = vis.get_render_option()
-    rend_opt.background_color = np.asarray([0, 0, 0])
-    pcd = o3d.geometry.PointCloud()
-    axes = o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0))
+    # vis = o3d.visualization.Visualizer()
+    # vis.create_window()
+    # rend_opt = vis.get_render_option()
+    # rend_opt.background_color = np.asarray([0, 0, 0])
+    # pcd = o3d.geometry.PointCloud()
+    # axes = o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0))
 
     lidar = sorted(os.listdir(opt.lidar))
     file = opt.lidar + lidar[0]
     xyz = get_lidar_from_file(file)
-    pcd.points = o3d.utility.Vector3dVector(xyz)
-    vis.add_geometry(pcd)
-    vis.add_geometry(axes)
+    # pcd.points = o3d.utility.Vector3dVector(xyz)
+    # vis.add_geometry(pcd)
+    # vis.add_geometry(axes)
 
     previous_points = np.array([]) # for registration purposes.
     sensorToWorldTransform = np.eye(4)
@@ -161,12 +161,12 @@ def detect(save_img=False):
     points = [[0, 0, 0]]
     lines = []
     line_colors = []
-    # line_set = o3d.geometry.LineSet()
-    # line_set.points = o3d.utility.Vector3dVector(points)
-    # line_set.lines = o3d.utility.Vector2iVector(lines)
-    # line_set.colors = o3d.utility.Vector3dVector(line_colors)
+#     # line_set = o3d.geometry.LineSet()
+#     # line_set.points = o3d.utility.Vector3dVector(points)
+#     # line_set.lines = o3d.utility.Vector2iVector(lines)
+#     # line_set.colors = o3d.utility.Vector3dVector(line_colors)
     #
-    # vis.add_geometry(line_set)
+#     # vis.add_geometry(line_set)
 
     objects = []
     dims = (376, 1241, 3)
@@ -236,9 +236,9 @@ def detect(save_img=False):
             center_lines.append([0, len(center_points)])
             center_points.append(object.center)
             line_colors.append(clr)
-            # line_set.points = o3d.utility.Vector3dVector(center_points)
-            # line_set.lines = o3d.utility.Vector2iVector(center_lines)
-            # line_set.colors = o3d.utility.Vector3dVector(line_colors)
+#             # line_set.points = o3d.utility.Vector3dVector(center_points)
+#             # line_set.lines = o3d.utility.Vector2iVector(center_lines)
+#             # line_set.colors = o3d.utility.Vector3dVector(line_colors)
 
             object_cloud.append(object.lidar)
             object_colors.append(objColor)
@@ -246,10 +246,10 @@ def detect(save_img=False):
         if len(object_cloud) > 0 and displayState == 1:
             object_cloud = np.vstack(object_cloud)
             object_colors = np.vstack(object_colors)
-            pcd.points = o3d.utility.Vector3dVector(object_cloud)
-            pcd.colors = o3d.utility.Vector3dVector(object_colors)
-        elif displayState == 2:
-            pcd.points = o3d.utility.Vector3dVector(xyz)
+            # pcd.points = o3d.utility.Vector3dVector(object_cloud)
+            # pcd.colors = o3d.utility.Vector3dVector(object_colors)
+        # elif displayState == 2:
+            # pcd.points = o3d.utility.Vector3dVector(xyz)
 
         # latest_points = np.vstack(center_points[1:])
         #
@@ -260,14 +260,14 @@ def detect(save_img=False):
         #     print("t:", t)
         # previous_points = latest_points.copy()
 
-        # frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=-t_fin)
-        # vis.add_geometry(frame, False)
+#         # frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=-t_fin)
+#         # vis.add_geometry(frame, False)
 
         # print("Center Points:", latest_points)
-        # vis.update_geometry(line_set)
-        vis.update_geometry(pcd)
-        vis.poll_events()
-        vis.update_renderer()
+        # # vis.update_geometry(line_set)
+        # vis.update_geometry(pcd)
+        # vis.poll_events()
+        # vis.update_renderer()
 
 
         u, v, z = cam_points
@@ -278,7 +278,7 @@ def detect(save_img=False):
         print('%sDone. (%.3fs)' % (s, t2 - t1))
 
         if view_img:
-            displayState = displayApp(displayState, im0, pcd, vis)
+            displayState = displayApp(displayState, im0)
 
     print('Done. (%.3fs)' % (time.time() - t0))
     f.close()
@@ -286,15 +286,16 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='../../Data_Links/kitti/00/image_0/',
-                        help='source')  # file/folder, 0 for webcam
-    parser.add_argument('--lidar', type=str, default='../../Data_Links/kitti_velodyne/00/velodyne/', help='lidar')
+    parser.add_argument('--source', type=str, default='../../../../Storage/Other/Temp/dataset/sequences/00/image_0',help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--lidar', type=str, default='../../../../Storage/Other/Temp/dataset/velodyne_dataset/sequences/00/velodyne/', help='lidar')
+
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--view-img', action='store_true', help='display results')
+    parser.add_argument('--view-img', default=True, action='store_true', help='display results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
