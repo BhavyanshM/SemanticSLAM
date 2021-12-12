@@ -6,7 +6,7 @@ from pathlib import Path
 import cv2
 import rospy
 
-from geometry_msgs.msg import PolygonStamped
+from sensor_msgs.msg import PointCloud2
 
 # import open3d as o3d
 import torch
@@ -23,96 +23,104 @@ from utils.torch_utils import select_device, time_synchronized
 
 from registration import *
 
-def detect(save_img=False):
-    source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
-    webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
-        ('rtsp://', 'rtmp://', 'http://'))
+class YOLOv5:
 
-    # Directories
-    save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
-    (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
+    def __init__(self):
+        self.bbox_publisher = rospy.Publisher("/semantic/bbox/polygons", PointCloud2, queue_size=2)
 
-    # Initialize
-    set_logging()
-    device = select_device(opt.device)
-    half = device.type != 'cpu'  # half precision only supported on CUDA
-    model = attempt_load(weights, map_location=device)  # load FP32 model
-    imgsz = check_img_size(imgsz, s=model.stride.max())  # check img_size
-    if half:
-        model.half()  # to FP16
+    def detect(save_img=False):
+        source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
+        webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
+            ('rtsp://', 'rtmp://', 'http://'))
 
-    if webcam:
-        view_img = True
-        cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz)
-    else:
-        save_img = True
-        dataset = LoadImages(source, img_size=imgsz)
+        # Directories
+        save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
+        (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
-    names = model.module.names if hasattr(model, 'module') else model.names
-    colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
+        # Initialize
+        set_logging()
+        device = select_device(opt.device)
+        half = device.type != 'cpu'  # half precision only supported on CUDA
+        model = attempt_load(weights, map_location=device)  # load FP32 model
+        imgsz = check_img_size(imgsz, s=model.stride.max())  # check img_size
+        if half:
+            model.half()  # to FP16
 
-    objects = []
-    dims = (376, 1241, 3)
+        if webcam:
+            view_img = True
+            cudnn.benchmark = True  # set True to speed up constant image size inference
+            dataset = LoadStreams(source, img_size=imgsz)
+        else:
+            save_img = True
+            dataset = LoadImages(source, img_size=imgsz)
 
-    f = open('labels.txt', 'w+')
-    time_count = 0
-    t0 = time.time()
-    img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
-    _ = model(img.half() if half else img) if device.type != 'cpu' else None  # run once
+        names = model.module.names if hasattr(model, 'module') else model.names
+        colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
 
-    for path, img, im0s, vid_cap in dataset:
-        objects = []  # Should be outside this loop when MOT is performed.
+        objects = []
+        dims = (376, 1241, 3)
 
-        t1 = time_synchronized()
-        time_count += 1
+        f = open('labels.txt', 'w+')
+        time_count = 0
+        t0 = time.time()
+        img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
+        _ = model(img.half() if half else img) if device.type != 'cpu' else None  # run once
 
-        img = torch.from_numpy(img).to(device)
-        img = img.half() if half else img.float()  # uint8 to fp16/32
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
-        if img.ndimension() == 3:
-            img = img.unsqueeze(0)
+        for path, img, im0s, vid_cap in dataset:
 
-        pred = model(img, augment=opt.augment)[0]
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+            t1 = time_synchronized()
+            time_count += 1
 
-        # Process detections
-        for i, det in enumerate(pred):  # detections per image
-            if webcam:  # batch_size >= 1
-                p, s, im0 = Path(path[i]), '%g: ' % i, im0s[i].copy()
-            else:
-                p, s, im0 = Path(path), '', im0s
+            # TODO: Separate inferencing code into a separate function and publish results
+            # TODO: Follow Reference: https://gist.github.com/lucasw/ea04dcd65bc944daea07612314d114bb
 
-            s += '%gx%g ' % img.shape[2:]  # print string
-            if len(det):
-                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-                for c in det[:, -1].unique():
-                    n = (det[:, -1] == c).sum()  # detections per class
-                    s += '%g %ss, ' % (n, names[int(c)])  # add to string
-                for *xyxy, conf, cls in reversed(det):
-                    bbox = np.array(torch.tensor(xyxy).view(-1).tolist())
-                    if save_txt:  # Write to file
-                        xywh = map(int, (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist())  # normalized xywh
-                        line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
-                        f.write(('%g ' * len(line)).rstrip() % line + '\n')
+            img = torch.from_numpy(img).to(device)
+            img = img.half() if half else img.float()  # uint8 to fp16/32
+            img /= 255.0  # 0 - 255 to 0.0 - 1.0
+            if img.ndimension() == 3:
+                img = img.unsqueeze(0)
 
-                    if save_img or view_img:  # Add bbox to image
-                        label = '%s %.2f' % (names[int(cls)], conf)
-                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=2)
+            pred = model(img, augment=opt.augment)[0]
+            pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
 
-        # t1 = time_synchronized()
 
-        t2 = time_synchronized()
-        print('%sDone. (%.3fs)' % (s, t2 - t1))
+            # Process detections
+            for i, det in enumerate(pred):  # detections per image
+                if webcam:  # batch_size >= 1
+                    p, s, im0 = Path(path[i]), '%g: ' % i, im0s[i].copy()
+                else:
+                    p, s, im0 = Path(path), '', im0s
 
-        if view_img:
-            cv2.imshow("Image", im0)
-            code = cv2.waitKeyEx(1)
-            if code == 113:
-                exit()
+                s += '%gx%g ' % img.shape[2:]  # print string
+                if len(det):
+                    det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+                    for c in det[:, -1].unique():
+                        n = (det[:, -1] == c).sum()  # detections per class
+                        s += '%g %ss, ' % (n, names[int(c)])  # add to string
+                    for *xyxy, conf, cls in reversed(det):
+                        bbox = np.array(torch.tensor(xyxy).view(-1).tolist())
+                        if save_txt:  # Write to file
+                            xywh = map(int, (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist())  # normalized xywh
+                            line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
+                            f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
-    print('Done. (%.3fs)' % (time.time() - t0))
-    f.close()
+                        if save_img or view_img:  # Add bbox to image
+                            label = '%s %.2f' % (names[int(cls)], conf)
+                            plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=2)
+
+            # t1 = time_synchronized()
+
+            t2 = time_synchronized()
+            print('%sDone. (%.3fs)' % (s, t2 - t1))
+
+            if view_img:
+                cv2.imshow("Image", im0)
+                code = cv2.waitKeyEx(1)
+                if code == 113:
+                    exit()
+
+        print('Done. (%.3fs)' % (time.time() - t0))
+        f.close()
 
 
 if __name__ == '__main__':
