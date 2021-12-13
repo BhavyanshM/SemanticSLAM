@@ -22,7 +22,7 @@ from registration import *
 def init_calib():
     kitti_data = open("calib.txt").readlines()
     calibs = {line.split(":")[0]: line.split(":")[1].strip('\n') for line in kitti_data}
-    P2 = np.matrix([float(x) for x in calibs["P2"].split(' ')[1:]]).reshape(3, 4)
+    P0 = np.matrix([float(x) for x in calibs["P0"].split(' ')[1:]]).reshape(3, 4)
 
     print("Calib:", calibs.keys())
 
@@ -31,7 +31,10 @@ def init_calib():
     R0_rect = np.insert(R0_rect, 3, values=[0, 0, 0, 1], axis=1)
     Tr_velo_to_cam = np.matrix([float(x) for x in calibs["Tr_velo_to_cam"].split(' ')[1:]]).reshape(3, 4)
     Tr_velo_to_cam = np.insert(Tr_velo_to_cam, 3, values=[0, 0, 0, 1], axis=0)
-    return P2, R0_rect, Tr_velo_to_cam
+
+    print(Tr_velo_to_cam)
+
+    return P0, R0_rect, Tr_velo_to_cam
 
 
 def get_lidar_from_file(file):
@@ -43,7 +46,7 @@ def get_lidar_from_file(file):
     return xyz
 
 
-def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
+def get_lidar_on_img(file, P0, R0_rect, Tr_velo_to_cam, width, height):
     xyz = get_lidar_from_file(file)
 
     print("XYZ:", xyz.shape, end='\t')
@@ -54,7 +57,7 @@ def get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, width, height):
     cloud = vel_points.copy()
     cloud = np.delete(cloud, 3, axis=0)
 
-    cam_points = P2 @ R0_rect @ Tr_velo_to_cam @ vel_points
+    cam_points = P0 @ R0_rect @ Tr_velo_to_cam @ vel_points
 
     # print("Condition: ", np.where(cam_points[2, :] < 0))
 
@@ -133,10 +136,10 @@ def detect(save_img=False):
     names = model.module.names if hasattr(model, 'module') else model.names
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
 
-    P2, R0_rect, Tr_velo_to_cam = init_calib()
+    P0, R0_rect, Tr_velo_to_cam = init_calib()
 
-    print("P2", P2)
-    print("P2", R0_rect)
+    print("P0", P0)
+    print("R0", R0_rect)
     print("Tr_velo_to_cam", Tr_velo_to_cam)
 
     # vis = o3d.visualization.Visualizer()
@@ -193,7 +196,7 @@ def detect(save_img=False):
         pred = model(img, augment=opt.augment)[0]
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
 
-        xyz, cam_cloud, cam_points = get_lidar_on_img(file, P2, R0_rect, Tr_velo_to_cam, dims[1], dims[0])
+        xyz, cam_cloud, cam_points = get_lidar_on_img(file, P0, R0_rect, Tr_velo_to_cam, dims[1], dims[0])
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
