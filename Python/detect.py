@@ -193,6 +193,7 @@ def detect(save_img=False):
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
 
+        print("Image: ", img.shape) # Image:  torch.Size([1, 3, 224, 640])
         pred = model(img, augment=opt.augment)[0]
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
 
