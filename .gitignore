@@ -1,8 +1,7 @@
 *kitti*
 *videos*
-*yolov5*
 *.idea*
 Data*
 *__init__.py
 *__pycache__*
-
+*.pt
