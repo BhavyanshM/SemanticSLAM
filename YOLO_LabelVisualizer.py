@@ -2,11 +2,11 @@ import cv2
 import os
 
 
-img_path = '../../../../Storage/Other/Temp/dataset/YOLO_Data/data/images/train2017/'
-label_path = '../../../../Storage/Other/Temp/dataset/YOLO_Data/data/labels/train2017/'
-archive_path = '../../../../Storage/Other/Temp/dataset/YOLO_Data/data/archive/'
-facade_img_path = '../../../../Storage/Other/Temp/dataset/YOLO_Data/data/images/facade/'
-facade_label_path = '../../../../Storage/Other/Temp/dataset/YOLO_Data/data/labels/facade/'
+img_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/images/train2017/'
+label_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/labels/train2017/'
+archive_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/archive/'
+facade_img_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/images/facade/'
+facade_label_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/labels/facade/'
 
 # img_files = os.listdir(img_path)
 # label_files = os.listdir(label_path)

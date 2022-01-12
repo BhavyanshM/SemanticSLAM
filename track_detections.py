@@ -25,7 +25,7 @@ for file in kitti_imgs:
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Image", img.shape[1]*2, img.shape[0]*2)
     cv2.imshow("Image", img)
-    code = cv2.waitKeyEx(100)
+    code = cv2.waitKeyEx(50)
     if code == 113:
         exit()
 

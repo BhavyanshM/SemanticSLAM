@@ -13,4 +13,3 @@ class MultiObjectTracker:
             for track in self.tracks:
                 for det in detections:
                     iou = compute_iou(xywh_to_xyxy(det[1:]), xywh_to_xyxy(track[1:]))
-                    print("IoU:", iou)
