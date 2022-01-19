@@ -1,0 +1,116 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 2000px;
+            height: 2000px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"id": "car", "label": "car", "shape": "dot", "size": 10}, {"id": "truck", "label": "truck", "shape": "dot", "size": 10}, {"id": "person", "label": "person", "shape": "dot", "size": 10}, {"id": "fire hydrant", "label": "fire hydrant", "shape": "dot", "size": 10}, {"id": "traffic light", "label": "traffic light", "shape": "dot", "size": 10}, {"id": "bicycle", "label": "bicycle", "shape": "dot", "size": 10}, {"id": "bench", "label": "bench", "shape": "dot", "size": 10}, {"id": "backpack", "label": "backpack", "shape": "dot", "size": 10}, {"id": "handbag", "label": "handbag", "shape": "dot", "size": 10}, {"id": "parking meter", "label": "parking meter", "shape": "dot", "size": 10}, {"id": "chair", "label": "chair", "shape": "dot", "size": 10}, {"id": "umbrella", "label": "umbrella", "shape": "dot", "size": 10}, {"id": "motorcycle", "label": "motorcycle", "shape": "dot", "size": 10}, {"id": "bus", "label": "bus", "shape": "dot", "size": 10}, {"id": "airplane", "label": "airplane", "shape": "dot", "size": 10}, {"id": "baseball glove", "label": "baseball glove", "shape": "dot", "size": 10}, {"id": "baseball bat", "label": "baseball bat", "shape": "dot", "size": 10}, {"id": "sports ball", "label": "sports ball", "shape": "dot", "size": 10}, {"id": "cell phone", "label": "cell phone", "shape": "dot", "size": 10}, {"id": "clock", "label": "clock", "shape": "dot", "size": 10}, {"id": "cake", "label": "cake", "shape": "dot", "size": 10}, {"id": "wine glass", "label": "wine glass", "shape": "dot", "size": 10}, {"id": "vase", "label": "vase", "shape": "dot", "size": 10}, {"id": "tie", "label": "tie", "shape": "dot", "size": 10}, {"id": "bed", "label": "bed", "shape": "dot", "size": 10}, {"id": "refrigerator", "label": "refrigerator", "shape": "dot", "size": 10}, {"id": "boat", "label": "boat", "shape": "dot", "size": 10}, {"id": "suitcase", "label": "suitcase", "shape": "dot", "size": 10}, {"id": "skateboard", "label": "skateboard", "shape": "dot", "size": 10}, {"id": "donut", "label": "donut", "shape": "dot", "size": 10}, {"id": "skis", "label": "skis", "shape": "dot", "size": 10}, {"id": "dog", "label": "dog", "shape": "dot", "size": 10}, {"id": "kite", "label": "kite", "shape": "dot", "size": 10}, {"id": "snowboard", "label": "snowboard", "shape": "dot", "size": 10}, {"id": "knife", "label": "knife", "shape": "dot", "size": 10}, {"id": "bottle", "label": "bottle", "shape": "dot", "size": 10}, {"id": "frisbee", "label": "frisbee", "shape": "dot", "size": 10}, {"id": "remote", "label": "remote", "shape": "dot", "size": 10}, {"id": "tv", "label": "tv", "shape": "dot", "size": 10}, {"id": "cup", "label": "cup", "shape": "dot", "size": 10}, {"id": "potted plant", "label": "potted plant", "shape": "dot", "size": 10}, {"id": "pizza", "label": "pizza", "shape": "dot", "size": 10}, {"id": "dining table", "label": "dining table", "shape": "dot", "size": 10}, {"id": "book", "label": "book", "shape": "dot", "size": 10}, {"id": "surfboard", "label": "surfboard", "shape": "dot", "size": 10}, {"id": "tennis racket", "label": "tennis racket", "shape": "dot", "size": 10}, {"id": "couch", "label": "couch", "shape": "dot", "size": 10}, {"id": "laptop", "label": "laptop", "shape": "dot", "size": 10}, {"id": "cat", "label": "cat", "shape": "dot", "size": 10}, {"id": "hot dog", "label": "hot dog", "shape": "dot", "size": 10}, {"id": "oven", "label": "oven", "shape": "dot", "size": 10}, {"id": "spoon", "label": "spoon", "shape": "dot", "size": 10}, {"id": "horse", "label": "horse", "shape": "dot", "size": 10}, {"id": "elephant", "label": "elephant", "shape": "dot", "size": 10}, {"id": "bowl", "label": "bowl", "shape": "dot", "size": 10}, {"id": "teddy bear", "label": "teddy bear", "shape": "dot", "size": 10}, {"id": "sink", "label": "sink", "shape": "dot", "size": 10}, {"id": "train", "label": "train", "shape": "dot", "size": 10}, {"id": "banana", "label": "banana", "shape": "dot", "size": 10}, {"id": "bird", "label": "bird", "shape": "dot", "size": 10}, {"id": "sandwich", "label": "sandwich", "shape": "dot", "size": 10}, {"id": "fork", "label": "fork", "shape": "dot", "size": 10}, {"id": "toilet", "label": "toilet", "shape": "dot", "size": 10}, {"id": "mouse", "label": "mouse", "shape": "dot", "size": 10}, {"id": "keyboard", "label": "keyboard", "shape": "dot", "size": 10}, {"id": "broccoli", "label": "broccoli", "shape": "dot", "size": 10}, {"id": "carrot", "label": "carrot", "shape": "dot", "size": 10}, {"id": "microwave", "label": "microwave", "shape": "dot", "size": 10}, {"id": "cow", "label": "cow", "shape": "dot", "size": 10}, {"id": "orange", "label": "orange", "shape": "dot", "size": 10}, {"id": "toothbrush", "label": "toothbrush", "shape": "dot", "size": 10}, {"id": "apple", "label": "apple", "shape": "dot", "size": 10}, {"id": "scissors", "label": "scissors", "shape": "dot", "size": 10}, {"id": "giraffe", "label": "giraffe", "shape": "dot", "size": 10}, {"id": "zebra", "label": "zebra", "shape": "dot", "size": 10}, {"id": "sheep", "label": "sheep", "shape": "dot", "size": 10}, {"id": "stop sign", "label": "stop sign", "shape": "dot", "size": 10}, {"id": "toaster", "label": "toaster", "shape": "dot", "size": 10}, {"id": "bear", "label": "bear", "shape": "dot", "size": 10}, {"id": "hair drier", "label": "hair drier", "shape": "dot", "size": 10}]);
+        edges = new vis.DataSet([{"from": "car", "relation": "co-exist", "to": "truck", "weight": 426}, {"from": "car", "relation": "co-exist", "to": "person", "weight": 912}, {"from": "car", "relation": "co-exist", "to": "fire hydrant", "weight": 76}, {"from": "car", "relation": "co-exist", "to": "traffic light", "weight": 256}, {"from": "car", "relation": "co-exist", "to": "bicycle", "weight": 118}, {"from": "car", "relation": "co-exist", "to": "bench", "weight": 90}, {"from": "car", "relation": "co-exist", "to": "backpack", "weight": 114}, {"from": "car", "relation": "co-exist", "to": "handbag", "weight": 196}, {"from": "car", "relation": "co-exist", "to": "parking meter", "weight": 74}, {"from": "car", "relation": "co-exist", "to": "chair", "weight": 76}, {"from": "car", "relation": "co-exist", "to": "umbrella", "weight": 84}, {"from": "car", "relation": "co-exist", "to": "motorcycle", "weight": 126}, {"from": "car", "relation": "co-exist", "to": "bus", "weight": 180}, {"from": "truck", "relation": "co-exist", "to": "person", "weight": 432}, {"from": "truck", "relation": "co-exist", "to": "traffic light", "weight": 122}, {"from": "truck", "relation": "co-exist", "to": "bus", "weight": 76}, {"from": "truck", "relation": "co-exist", "to": "airplane", "weight": 72}, {"from": "truck", "relation": "co-exist", "to": "handbag", "weight": 72}, {"from": "baseball glove", "relation": "co-exist", "to": "baseball bat", "weight": 166}, {"from": "baseball glove", "relation": "co-exist", "to": "person", "weight": 266}, {"from": "baseball glove", "relation": "co-exist", "to": "sports ball", "weight": 116}, {"from": "baseball bat", "relation": "co-exist", "to": "person", "weight": 258}, {"from": "baseball bat", "relation": "co-exist", "to": "sports ball", "weight": 88}, {"from": "person", "relation": "co-exist", "to": "cell phone", "weight": 392}, {"from": "person", "relation": "co-exist", "to": "clock", "weight": 176}, {"from": "person", "relation": "co-exist", "to": "fire hydrant", "weight": 82}, {"from": "person", "relation": "co-exist", "to": "traffic light", "weight": 238}, {"from": "person", "relation": "co-exist", "to": "cake", "weight": 184}, {"from": "person", "relation": "co-exist", "to": "wine glass", "weight": 182}, {"from": "person", "relation": "co-exist", "to": "vase", "weight": 106}, {"from": "person", "relation": "co-exist", "to": "tie", "weight": 354}, {"from": "person", "relation": "co-exist", "to": "bed", "weight": 120}, {"from": "person", "relation": "co-exist", "to": "refrigerator", "weight": 94}, {"from": "person", "relation": "co-exist", "to": "handbag", "weight": 690}, {"from": "person", "relation": "co-exist", "to": "bicycle", "weight": 266}, {"from": "person", "relation": "co-exist", "to": "bench", "weight": 408}, {"from": "person", "relation": "co-exist", "to": "boat", "weight": 200}, {"from": "person", "relation": "co-exist", "to": "suitcase", "weight": 154}, {"from": "person", "relation": "co-exist", "to": "backpack", "weight": 476}, {"from": "person", "relation": "co-exist", "to": "skateboard", "weight": 326}, {"from": "person", "relation": "co-exist", "to": "donut", "weight": 94}, {"from": "person", "relation": "co-exist", "to": "skis", "weight": 262}, {"from": "person", "relation": "co-exist", "to": "dog", "weight": 228}, {"from": "person", "relation": "co-exist", "to": "kite", "weight": 208}, {"from": "person", "relation": "co-exist", "to": "snowboard", "weight": 158}, {"from": "person", "relation": "co-exist", "to": "knife", "weight": 256}, {"from": "person", "relation": "co-exist", "to": "bottle", "weight": 522}, {"from": "person", "relation": "co-exist", "to": "frisbee", "weight": 200}, {"from": "person", "relation": "co-exist", "to": "remote", "weight": 224}, {"from": "person", "relation": "co-exist", "to": "tv", "weight": 202}, {"from": "person", "relation": "co-exist", "to": "chair", "weight": 838}, {"from": "person", "relation": "co-exist", "to": "cup", "weight": 526}, {"from": "person", "relation": "co-exist", "to": "potted plant", "weight": 208}, {"from": "person", "relation": "co-exist", "to": "pizza", "weight": 180}, {"from": "person", "relation": "co-exist", "to": "dining table", "weight": 636}, {"from": "person", "relation": "co-exist", "to": "book", "weight": 244}, {"from": "person", "relation": "co-exist", "to": "motorcycle", "weight": 252}, {"from": "person", "relation": "co-exist", "to": "surfboard", "weight": 394}, {"from": "person", "relation": "co-exist", "to": "bus", "weight": 286}, {"from": "person", "relation": "co-exist", "to": "umbrella", "weight": 332}, {"from": "person", "relation": "co-exist", "to": "tennis racket", "weight": 320}, {"from": "person", "relation": "co-exist", "to": "sports ball", "weight": 354}, {"from": "person", "relation": "co-exist", "to": "couch", "weight": 230}, {"from": "person", "relation": "co-exist", "to": "laptop", "weight": 174}, {"from": "person", "relation": "co-exist", "to": "cat", "weight": 92}, {"from": "person", "relation": "co-exist", "to": "hot dog", "weight": 72}, {"from": "person", "relation": "co-exist", "to": "oven", "weight": 106}, {"from": "person", "relation": "co-exist", "to": "spoon", "weight": 216}, {"from": "person", "relation": "co-exist", "to": "horse", "weight": 214}, {"from": "person", "relation": "co-exist", "to": "elephant", "weight": 98}, {"from": "person", "relation": "co-exist", "to": "bowl", "weight": 300}, {"from": "person", "relation": "co-exist", "to": "teddy bear", "weight": 90}, {"from": "person", "relation": "co-exist", "to": "sink", "weight": 102}, {"from": "person", "relation": "co-exist", "to": "train", "weight": 136}, {"from": "person", "relation": "co-exist", "to": "banana", "weight": 74}, {"from": "person", "relation": "co-exist", "to": "bird", "weight": 84}, {"from": "person", "relation": "co-exist", "to": "sandwich", "weight": 82}, {"from": "person", "relation": "co-exist", "to": "fork", "weight": 178}, {"from": "person", "relation": "co-exist", "to": "airplane", "weight": 108}, {"from": "cell phone", "relation": "co-exist", "to": "handbag", "weight": 92}, {"from": "cell phone", "relation": "co-exist", "to": "laptop", "weight": 70}, {"from": "cell phone", "relation": "co-exist", "to": "chair", "weight": 90}, {"from": "cell phone", "relation": "co-exist", "to": "dining table", "weight": 76}, {"from": "cell phone", "relation": "co-exist", "to": "cup", "weight": 84}, {"from": "traffic light", "relation": "co-exist", "to": "bus", "weight": 82}, {"from": "cake", "relation": "co-exist", "to": "chair", "weight": 78}, {"from": "cake", "relation": "co-exist", "to": "dining table", "weight": 180}, {"from": "cake", "relation": "co-exist", "to": "knife", "weight": 100}, {"from": "cake", "relation": "co-exist", "to": "fork", "weight": 86}, {"from": "cake", "relation": "co-exist", "to": "cup", "weight": 82}, {"from": "cake", "relation": "co-exist", "to": "spoon", "weight": 74}, {"from": "wine glass", "relation": "co-exist", "to": "cup", "weight": 108}, {"from": "wine glass", "relation": "co-exist", "to": "bottle", "weight": 126}, {"from": "wine glass", "relation": "co-exist", "to": "bowl", "weight": 76}, {"from": "wine glass", "relation": "co-exist", "to": "dining table", "weight": 158}, {"from": "wine glass", "relation": "co-exist", "to": "chair", "weight": 88}, {"from": "vase", "relation": "co-exist", "to": "potted plant", "weight": 144}, {"from": "vase", "relation": "co-exist", "to": "dining table", "weight": 102}, {"from": "vase", "relation": "co-exist", "to": "cup", "weight": 74}, {"from": "vase", "relation": "co-exist", "to": "bowl", "weight": 80}, {"from": "vase", "relation": "co-exist", "to": "chair", "weight": 116}, {"from": "couch", "relation": "co-exist", "to": "cup", "weight": 70}, {"from": "couch", "relation": "co-exist", "to": "remote", "weight": 154}, {"from": "couch", "relation": "co-exist", "to": "chair", "weight": 192}, {"from": "couch", "relation": "co-exist", "to": "dining table", "weight": 88}, {"from": "couch", "relation": "co-exist", "to": "tv", "weight": 106}, {"from": "couch", "relation": "co-exist", "to": "book", "weight": 128}, {"from": "couch", "relation": "co-exist", "to": "potted plant", "weight": 94}, {"from": "cup", "relation": "co-exist", "to": "bottle", "weight": 288}, {"from": "cup", "relation": "co-exist", "to": "chair", "weight": 276}, {"from": "cup", "relation": "co-exist", "to": "laptop", "weight": 100}, {"from": "cup", "relation": "co-exist", "to": "dining table", "weight": 470}, {"from": "cup", "relation": "co-exist", "to": "potted plant", "weight": 84}, {"from": "cup", "relation": "co-exist", "to": "pizza", "weight": 118}, {"from": "cup", "relation": "co-exist", "to": "bowl", "weight": 284}, {"from": "cup", "relation": "co-exist", "to": "oven", "weight": 82}, {"from": "cup", "relation": "co-exist", "to": "sink", "weight": 96}, {"from": "cup", "relation": "co-exist", "to": "book", "weight": 106}, {"from": "cup", "relation": "co-exist", "to": "spoon", "weight": 210}, {"from": "cup", "relation": "co-exist", "to": "knife", "weight": 196}, {"from": "cup", "relation": "co-exist", "to": "fork", "weight": 196}, {"from": "cup", "relation": "co-exist", "to": "tv", "weight": 92}, {"from": "cup", "relation": "co-exist", "to": "sandwich", "weight": 76}, {"from": "bottle", "relation": "co-exist", "to": "chair", "weight": 270}, {"from": "bottle", "relation": "co-exist", "to": "dining table", "weight": 310}, {"from": "bottle", "relation": "co-exist", "to": "refrigerator", "weight": 86}, {"from": "bottle", "relation": "co-exist", "to": "oven", "weight": 96}, {"from": "bottle", "relation": "co-exist", "to": "spoon", "weight": 128}, {"from": "bottle", "relation": "co-exist", "to": "knife", "weight": 120}, {"from": "bottle", "relation": "co-exist", "to": "potted plant", "weight": 92}, {"from": "bottle", "relation": "co-exist", "to": "pizza", "weight": 82}, {"from": "bottle", "relation": "co-exist", "to": "bowl", "weight": 208}, {"from": "bottle", "relation": "co-exist", "to": "sink", "weight": 176}, {"from": "bottle", "relation": "co-exist", "to": "handbag", "weight": 78}, {"from": "bottle", "relation": "co-exist", "to": "book", "weight": 96}, {"from": "bottle", "relation": "co-exist", "to": "tv", "weight": 76}, {"from": "bottle", "relation": "co-exist", "to": "toilet", "weight": 74}, {"from": "bottle", "relation": "co-exist", "to": "fork", "weight": 82}, {"from": "remote", "relation": "co-exist", "to": "chair", "weight": 112}, {"from": "remote", "relation": "co-exist", "to": "tv", "weight": 120}, {"from": "remote", "relation": "co-exist", "to": "book", "weight": 88}, {"from": "chair", "relation": "co-exist", "to": "laptop", "weight": 130}, {"from": "chair", "relation": "co-exist", "to": "dining table", "weight": 518}, {"from": "chair", "relation": "co-exist", "to": "mouse", "weight": 82}, {"from": "chair", "relation": "co-exist", "to": "potted plant", "weight": 184}, {"from": "chair", "relation": "co-exist", "to": "bed", "weight": 96}, {"from": "chair", "relation": "co-exist", "to": "tv", "weight": 200}, {"from": "chair", "relation": "co-exist", "to": "bench", "weight": 90}, {"from": "chair", "relation": "co-exist", "to": "keyboard", "weight": 72}, {"from": "chair", "relation": "co-exist", "to": "refrigerator", "weight": 72}, {"from": "chair", "relation": "co-exist", "to": "handbag", "weight": 120}, {"from": "chair", "relation": "co-exist", "to": "backpack", "weight": 80}, {"from": "chair", "relation": "co-exist", "to": "book", "weight": 224}, {"from": "chair", "relation": "co-exist", "to": "bowl", "weight": 198}, {"from": "chair", "relation": "co-exist", "to": "umbrella", "weight": 110}, {"from": "chair", "relation": "co-exist", "to": "fork", "weight": 104}, {"from": "chair", "relation": "co-exist", "to": "spoon", "weight": 118}, {"from": "chair", "relation": "co-exist", "to": "knife", "weight": 100}, {"from": "laptop", "relation": "co-exist", "to": "mouse", "weight": 102}, {"from": "laptop", "relation": "co-exist", "to": "keyboard", "weight": 86}, {"from": "laptop", "relation": "co-exist", "to": "tv", "weight": 96}, {"from": "laptop", "relation": "co-exist", "to": "book", "weight": 90}, {"from": "dining table", "relation": "co-exist", "to": "potted plant", "weight": 126}, {"from": "dining table", "relation": "co-exist", "to": "pizza", "weight": 206}, {"from": "dining table", "relation": "co-exist", "to": "fork", "weight": 294}, {"from": "dining table", "relation": "co-exist", "to": "handbag", "weight": 74}, {"from": "dining table", "relation": "co-exist", "to": "bowl", "weight": 406}, {"from": "dining table", "relation": "co-exist", "to": "book", "weight": 112}, {"from": "dining table", "relation": "co-exist", "to": "broccoli", "weight": 82}, {"from": "dining table", "relation": "co-exist", "to": "sandwich", "weight": 124}, {"from": "dining table", "relation": "co-exist", "to": "knife", "weight": 294}, {"from": "dining table", "relation": "co-exist", "to": "carrot", "weight": 72}, {"from": "dining table", "relation": "co-exist", "to": "spoon", "weight": 264}, {"from": "mouse", "relation": "co-exist", "to": "keyboard", "weight": 154}, {"from": "mouse", "relation": "co-exist", "to": "tv", "weight": 130}, {"from": "bed", "relation": "co-exist", "to": "book", "weight": 72}, {"from": "refrigerator", "relation": "co-exist", "to": "oven", "weight": 76}, {"from": "handbag", "relation": "co-exist", "to": "bench", "weight": 92}, {"from": "handbag", "relation": "co-exist", "to": "backpack", "weight": 200}, {"from": "handbag", "relation": "co-exist", "to": "umbrella", "weight": 114}, {"from": "handbag", "relation": "co-exist", "to": "suitcase", "weight": 90}, {"from": "handbag", "relation": "co-exist", "to": "bicycle", "weight": 78}, {"from": "handbag", "relation": "co-exist", "to": "bus", "weight": 72}, {"from": "microwave", "relation": "co-exist", "to": "oven", "weight": 80}, {"from": "suitcase", "relation": "co-exist", "to": "backpack", "weight": 78}, {"from": "oven", "relation": "co-exist", "to": "bowl", "weight": 100}, {"from": "oven", "relation": "co-exist", "to": "sink", "weight": 84}, {"from": "spoon", "relation": "co-exist", "to": "knife", "weight": 148}, {"from": "spoon", "relation": "co-exist", "to": "bowl", "weight": 256}, {"from": "spoon", "relation": "co-exist", "to": "fork", "weight": 138}, {"from": "knife", "relation": "co-exist", "to": "bowl", "weight": 170}, {"from": "knife", "relation": "co-exist", "to": "fork", "weight": 200}, {"from": "knife", "relation": "co-exist", "to": "pizza", "weight": 106}, {"from": "potted plant", "relation": "co-exist", "to": "book", "weight": 78}, {"from": "cat", "relation": "co-exist", "to": "book", "weight": 70}, {"from": "book", "relation": "co-exist", "to": "tv", "weight": 146}, {"from": "tv", "relation": "co-exist", "to": "keyboard", "weight": 148}, {"from": "bowl", "relation": "co-exist", "to": "sink", "weight": 90}, {"from": "bowl", "relation": "co-exist", "to": "fork", "weight": 152}, {"from": "bowl", "relation": "co-exist", "to": "broccoli", "weight": 80}, {"from": "bowl", "relation": "co-exist", "to": "carrot", "weight": 76}, {"from": "bowl", "relation": "co-exist", "to": "sandwich", "weight": 74}, {"from": "pizza", "relation": "co-exist", "to": "fork", "weight": 92}, {"from": "sink", "relation": "co-exist", "to": "toilet", "weight": 220}, {"from": "broccoli", "relation": "co-exist", "to": "carrot", "weight": 82}, {"from": "tennis racket", "relation": "co-exist", "to": "sports ball", "weight": 138}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "repulsion": {
+            "centralGravity": 0.5,
+            "damping": 0.09,
+            "nodeDistance": 180,
+            "springConstant": 0.05,
+            "springLength": 280
+        },
+        "solver": "repulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>
