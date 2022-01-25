@@ -2,11 +2,9 @@ import cv2
 import os
 
 
-img_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/images/train2017/'
-label_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/labels/train2017/'
-archive_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/archive/'
-facade_img_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/images/facade/'
-facade_label_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/YOLO_Data/data/labels/facade/'
+img_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/DoorDetect-Dataset/images/'
+label_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/DoorDetect-Dataset/labels/'
+
 
 # ---------------------For Visualizing COCO dataset ------------------------------------------------
 img_files = os.listdir(img_path)
@@ -20,26 +18,8 @@ label_files = os.listdir(label_path)
 # img_path = facade_img_path
 # label_path = facade_label_path
 
-names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
-        'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
-        'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
-        'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard',
-        'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
-        'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
-        'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
-        'teddy bear', 'hair drier', 'toothbrush']
+classes = ['door', 'handle', 'cabinet door', 'refrigerator door']
 
-classes = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
-           'street sign', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear',
-           'zebra', 'giraffe', 'hat', 'backpack', 'umbrella', 'shoe', 'eye glasses', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-           'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle',
-           'plate', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
-           'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'mirror', 'dining table', 'window', 'desk',
-           'toilet', 'door', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
-           'refrigerator', 'blender', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush', 'hair brush', 'window']
-
-print('Total Classes: ', len(classes))
 
 def sync_labels():
     count = 0
@@ -52,9 +32,12 @@ def sync_labels():
             print('Not Found : ', x[:-4] + '.jpg', count)
 
 def visualize(img_files, img_path, label_files, label_path):
+    count = 0
     for file in img_files:
+
+        print('Opening(', count, '): ', label_path + file[:-4])
         img = cv2.imread(img_path + file)
-        labels = open(label_path + file[:-4] + '.txt')
+        labels = open(label_path + '.'.join(file.split('.')[:-1]) + '.txt')
 
         for l in labels:
             det = list(map(float, l.split(' ')))
@@ -66,7 +49,8 @@ def visualize(img_files, img_path, label_files, label_path):
 
         # print(file)
         cv2.imshow("Image", img)
-        code = cv2.waitKeyEx(0)
+        code = cv2.waitKeyEx(1)
+        count += 1
         if code == 113:
             exit()
 
