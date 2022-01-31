@@ -1,30 +1,47 @@
 import numpy as np
-import math
+import random
 
 
 class Instance:
-    def __init__(self, id, bbox, cls, conf):
-        self.id = id
-        self.class_conf = conf
-        self.class_id = cls
-        self.xyxy = bbox
-        self.position = np.array([0, 0, 0])
-        self.orientation = np.array([0, 0, 0])
-        self.lidar = None
-        self.center = None
-        self.frames = []
+    def __init__(self, cls, id, initPos, timestamp, hog, bbox):
+        # Initialize
+        self.cls = cls
+        self.last_time = timestamp
+        self.prev_pos = [initPos[0], initPos[1]]
 
-    def extract_bbox_lidar(self, cam_points, cam_cloud):
-        u, v, z = cam_points
-        mx, my = (self.xyxy[2] - self.xyxy[0]) / 16, (self.xyxy[3] - self.xyxy[1]) / 16
-        mx, my = 0 , 0
-        u_out = np.logical_or(u < self.xyxy[0] + mx, u > self.xyxy[2] - mx)
-        v_out = np.logical_or(v < self.xyxy[1] + my, v > self.xyxy[3] - my)
-        outlier = np.logical_or(u_out, v_out)
-        points = np.delete(cam_cloud.T, np.where(outlier), axis=1)
-        self.center = np.mean(points, axis=1)
-        self.lidar = points.T
-        mean_mat = np.repeat(np.array([self.center]), self.lidar.shape[0], axis=0)
-        distances = np.linalg.norm(mean_mat - self.lidar, axis=1)
-        dist_stdev = np.std(distances)
-        self.lidar = np.delete(self.lidar, np.where(distances > 0.75 * dist_stdev), axis=0)
+        # Update these
+        self.id = id
+        self.imgTrack = []
+        self.timestamps = [timestamp]
+        self.hog = hog
+        self.bbox = bbox
+        self.history = [bbox]
+        self.active = True
+        self.candidate = False
+        self.found = True
+        self.num_readings = 1
+        self.num_failures = 0
+        self.color = [random.randint(0,255) for _ in range(3)]
+
+    def update(self, timestamp, measuredSeaPos, dist):
+        dt = timestamp - self.last_time
+        self.last_time = timestamp
+        self.timestamps.append(timestamp)
+
+    def predict(self, current_time):
+        dt = current_time - self.last_time
+        self.last_time = current_time
+
+        return np.array([self.filter.x[0], self.filter.x[2]])
+
+    def update_hog(self, hog):
+        self.hog = hog
+
+    def update_bbox(self, dims, imgPoint, bbox):
+        # self.dims = [0.5 * self.dims[i] + 0.5 * dims[i] for i in range(len(dims))]
+        self.dims = [0.98 * self.dims[i] + 0.02 * dims[i] for i in range(len(dims))]
+        x, y, w, h = imgPoint[0], imgPoint[1], self.dims[0], self.dims[1]
+        self.bbox = [x - w / 2, y - 0.9 * h, x + w / 2, y + 0.1 * h]
+        self.bbox = [int(n) for n in self.bbox]
+        self.history.append(self.bbox)
+        # if (self.id == 0): print("Bboxes:", bbox, self.bbox, dims, self.dims)
