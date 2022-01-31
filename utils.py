@@ -1,4 +1,14 @@
 import cv2
+from Instance import *
+
+def create_instances(detections):
+    objects = []
+    for i, object in enumerate(detections):
+        instance = Instance(object[0], i, np.array([object[1], object[2]]), 0, None, object)
+        objects.append(instance)
+
+    return objects
+
 
 def load_detections(file):
     f = open(file)
@@ -15,9 +25,9 @@ def print_detection_classes(detections, classes):
             s += ' ' + classes[det[0]]
     print('Classes:', s)
 
-def plot_detection_boxes(img, detections, thickness=2):
-    for det in detections:
-        cls, x, y, w, h = tuple(det)
+def plot_detection_boxes(img, objects, thickness=2):
+    for det in objects:
+        cls, x, y, w, h = tuple(det.bbox)
         cv2.rectangle(img, (int(x-w/2),int(y-h/2)), (int(x+w/2),int(y+h/2)), (123*cls % 255, 231*cls % 255, 314*cls % 255), thickness)
 
 def xywh_to_xyxy(xywh):
@@ -39,3 +49,18 @@ def compute_iou(bbox1, bbox2):
     iou = int_area / float(bbox1_area + bbox2_area - int_area)
 
     return iou
+
+def display(img):
+    cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Image", img.shape[1]*2, img.shape[0]*2)
+    cv2.imshow("Image", img)
+    code = cv2.waitKeyEx(50)
+    if code == 32:
+        code = cv2.waitKeyEx(0)
+    if code == 113:
+        exit()
+
+def combine_images_vertical(img1, img2):
+    images = [img1, img2]
+    final = cv2.vconcat(images)
+    return final
