@@ -1,10 +1,10 @@
 import cv2
-from Instance import *
+from SemanticFeature import *
 
-def create_instances(detections):
+def create_tracks(detections):
     objects = []
     for i, object in enumerate(detections):
-        instance = Instance(object[0], i, np.array([object[1], object[2]]), 0, None, object)
+        instance = SemanticFeature(object[0], i, np.array([object[1], object[2]]), 0, None, object)
         objects.append(instance)
 
     return objects

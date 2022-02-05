@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 
-class Instance:
+class SemanticFeature:
     def __init__(self, cls, id, initPos, timestamp, hog, bbox):
         # Initialize
         self.cls = cls
@@ -11,16 +11,10 @@ class Instance:
 
         # Update these
         self.id = id
-        self.imgTrack = []
         self.timestamps = [timestamp]
         self.hog = hog
         self.bbox = bbox
-        self.history = [bbox]
-        self.active = True
-        self.candidate = False
-        self.found = True
-        self.num_readings = 1
-        self.num_failures = 0
+        self.velocity = np.array([0,0])
         self.color = [random.randint(0,255) for _ in range(3)]
 
     def update(self, timestamp, measuredSeaPos, dist):

@@ -4,17 +4,17 @@ import numpy as np
 
 from KITTI_Classes import *
 from utils import *
-from MultiObjectTracker import *
+from SemanticFeatureMatcher import *
 
 kitti_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/sequences/00/image_0/'
 kitti_detections_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/sequences/00/detections_0/'
 
 kitti_imgs = sorted(os.listdir(kitti_path))
 
-mot = MultiObjectTracker()
+mot = SemanticFeatureMatcher()
 
 detections = load_detections(kitti_detections_path + kitti_imgs[0].replace('image_0', 'detections_0').replace('.png', '.txt'))
-objects = create_instances(detections)
+objects = create_tracks(detections)
 mot.initialize_tracks(objects)
 
 prevImg = cv2.imread(kitti_path + kitti_imgs[0])
@@ -24,7 +24,7 @@ for file in kitti_imgs:
     img = cv2.imread(kitti_path + file)
 
     detections = load_detections(kitti_detections_path + file.replace('image_0', 'detections_0').replace('.png', '.txt'))
-    objects = create_instances(detections)
+    objects = create_tracks(detections)
 
     mot.associate_detections(objects)
 
@@ -35,7 +35,8 @@ for file in kitti_imgs:
     display(combined)
     prevImg = img
 
-    mot.tracks = objects
+    mot.features = objects
+
     # images = [prevImg, img]
     # final = cv2.vconcat(images)
     # cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
