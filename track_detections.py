@@ -29,9 +29,10 @@ for file in kitti_imgs:
     mot.associate_detections(objects)
 
 
-    plot_detection_boxes(img, objects, 2)
+    plot_detection_boxes(img, objects, 2, mot.classes)
     combined = combine_images_vertical(prevImg, img)
-    mot.plot_associations(combined, objects)
+
+    plot_associations(combined, mot, objects)
     display(combined)
     prevImg = img
 

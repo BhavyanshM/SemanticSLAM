@@ -25,10 +25,14 @@ def print_detection_classes(detections, classes):
             s += ' ' + classes[det[0]]
     print('Classes:', s)
 
-def plot_detection_boxes(img, objects, thickness=2):
+def plot_detection_boxes(img, objects, thickness=2, names=[]):
     for det in objects:
         cls, x, y, w, h = tuple(det.bbox)
-        cv2.rectangle(img, (int(x-w/2),int(y-h/2)), (int(x+w/2),int(y+h/2)), (123*cls % 255, 231*cls % 255, 314*cls % 255), thickness)
+        color = (123 * cls % 255, 231 * cls % 255, 314 * cls % 255)
+        color_text = (110 * cls % 255, 83 * cls % 255, 121 * cls % 255)
+        cv2.rectangle(img, (int(x-w/2),int(y-h/2)), (int(x+w/2),int(y+h/2)), color, thickness)
+        if len(names) > 0:
+            cv2.putText(img, names[cls], (int(x-w/2), int(y-h/2 - 2)), 0, 0.6, color_text, thickness=2, lineType=cv2.LINE_AA)
 
 def xywh_to_xyxy(xywh):
     return [int(xywh[0] - xywh[2]/2), int(xywh[1] - xywh[3]/2), int(xywh[0] + xywh[2]/2), int(xywh[1] + xywh[3]/2)]
@@ -54,6 +58,7 @@ def display(img):
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Image", img.shape[1]*2, img.shape[0]*2)
     cv2.imshow("Image", img)
+    print("Shape:", img.shape)
     code = cv2.waitKeyEx(50)
     if code == 32:
         code = cv2.waitKeyEx(0)
@@ -64,3 +69,13 @@ def combine_images_vertical(img1, img2):
     images = [img1, img2]
     final = cv2.vconcat(images)
     return final
+
+def plot_associations(img, mot, detections):
+    for i in range(len(mot.features)):
+        if mot.table[i, mot.matches[i]] != 0:
+            print(i, len(mot.features))
+            cls = mot.features[i].cls
+            color = (123 * cls % 255, 231 * cls % 255, 314 * cls % 255)
+            cv2.line(img, (mot.features[i].bbox[1], mot.features[i].bbox[2]), (detections[mot.matches[i]].bbox[1], int(img.shape[0]/2) + detections[mot.matches[i]].bbox[2]), color, 3)
+
+    print(mot.matches)

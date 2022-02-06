@@ -8,6 +8,14 @@ class SemanticFeatureMatcher:
         self.frameCount = 0
         self.table = None
         self.matches = None
+        self.classes = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
+           'street sign', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear',
+           'zebra', 'giraffe', 'hat', 'backpack', 'umbrella', 'shoe', 'eye glasses', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+           'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle',
+           'plate', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
+           'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'mirror', 'dining table', 'window', 'desk',
+           'toilet', 'door', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
+           'refrigerator', 'blender', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush', 'hair brush', 'window']
 
     def initialize_tracks(self, detections):
         self.features.extend(detections)
@@ -33,10 +41,4 @@ class SemanticFeatureMatcher:
         #         self.features[i].append(objects[self.matches[i]])
 
 
-    def plot_associations(self, img, objects):
-        for i in range(len(self.features)):
-            if self.table[i, self.matches[i]] != 0:
-                print(i, len(self.features))
-                cv2.line(img, (self.features[i].bbox[1], self.features[i].bbox[2]), (objects[self.matches[i]].bbox[1], int(img.shape[0]/2) + objects[self.matches[i]].bbox[2]), (255,0,255), 3)
 
-        print(self.matches)
