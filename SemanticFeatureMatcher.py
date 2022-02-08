@@ -21,7 +21,6 @@ class SemanticFeatureMatcher:
         self.features.extend(detections)
 
     def associate_detections(self, objects):
-        print("Frames:", self.frameCount, "Detections:", len(objects), "Tracks:", len(self.features))
 
         self.table = np.zeros(shape=(len(self.features), len(objects)))
 

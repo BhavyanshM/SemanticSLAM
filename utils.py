@@ -23,7 +23,6 @@ def print_detection_classes(detections, classes):
     for det in detections:
         if classes[det[0]] not in s:
             s += ' ' + classes[det[0]]
-    print('Classes:', s)
 
 def plot_detection_boxes(img, objects, thickness=2, names=[]):
     for det in objects:
@@ -56,10 +55,10 @@ def compute_iou(bbox1, bbox2):
 
 def display(img):
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Image", img.shape[1]*2, img.shape[0]*2)
+    cv2.resizeWindow("Image", int(img.shape[1]*1.3), int(img.shape[0]*1.3))
     cv2.imshow("Image", img)
     print("Shape:", img.shape)
-    code = cv2.waitKeyEx(50)
+    code = cv2.waitKeyEx(20)
     if code == 32:
         code = cv2.waitKeyEx(0)
     if code == 113:
@@ -73,9 +72,7 @@ def combine_images_vertical(img1, img2):
 def plot_associations(img, mot, detections):
     for i in range(len(mot.features)):
         if mot.table[i, mot.matches[i]] != 0:
-            print(i, len(mot.features))
             cls = mot.features[i].cls
             color = (123 * cls % 255, 231 * cls % 255, 314 * cls % 255)
             cv2.line(img, (mot.features[i].bbox[1], mot.features[i].bbox[2]), (detections[mot.matches[i]].bbox[1], int(img.shape[0]/2) + detections[mot.matches[i]].bbox[2]), color, 3)
 
-    print(mot.matches)
