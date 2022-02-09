@@ -76,3 +76,12 @@ def plot_associations(img, mot, detections):
             color = (123 * cls % 255, 231 * cls % 255, 314 * cls % 255)
             cv2.line(img, (mot.features[i].bbox[1], mot.features[i].bbox[2]), (detections[mot.matches[i]].bbox[1], int(img.shape[0]/2) + detections[mot.matches[i]].bbox[2]), color, 3)
 
+def get_plane(point, normal):
+    plane = np.array([normal[0], normal[1], normal[2], -np.dot(point, normal)])
+    print("Plane:", plane)
+    return plane
+
+def get_plane_z(p, pi):
+    z = -(np.dot(pi[:2], p) + pi[3])
+    print("Z:", z)
+    return z

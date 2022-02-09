@@ -1,5 +1,8 @@
 import open3d as o3d
 import numpy as np
+from utils import *
+import open3d.visualization.gui as gui
+import open3d.visualization.rendering as rendering
 
 class Open3DRenderer:
     def __init__(self):
@@ -8,6 +11,7 @@ class Open3DRenderer:
         self.rend_opt = self.vis.get_render_option()
         self.rend_opt.mesh_show_back_face = True
         self.rend_opt.background_color = np.asarray([0, 0, 0])
+        self.rend_opt.light_on = True
         self.pcd = o3d.geometry.PointCloud()
         self.axes = [o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0))]
         self.line_set = o3d.geometry.LineSet()
@@ -15,6 +19,13 @@ class Open3DRenderer:
         self.vis.add_geometry(self.line_set)
         self.vis.add_geometry(self.axes[0])
         self.vis.add_geometry(self.pcd)
+
+        # gui.Application.instance.initialize()
+        # self.window = gui.Application.instance.create_window("use_point_light", 500, 500)
+        # self.scene_widget = gui.SceneWidget()
+        # self.scene_widget.scene = rendering.Open3DScene(self.window.renderer)
+        # self.window.add_child(self.scene_widget)
+        # self.scene_widget.scene.scene.add_point_light('light', [1, 1, 1], -3 * np.array([-1,-1,0]), 1e8, 1e2, True)
 
         self.control = self.vis.get_view_control()
 
@@ -35,16 +46,26 @@ class Open3DRenderer:
         self.axes.append(o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(t[0], t[1], t[2])))
         self.insert_geometry(self.axes[-1])
 
-    def submit_quad(self, points):
+    def submit_quad(self, pi, scale=0.5, r = 1, g = 0.706, b = 0):
+
+        xy1 = (pi[0] + scale, pi[1] + scale)
+        xy2 = (pi[0] + scale, pi[1] - scale)
+        xy3 = (pi[0] - scale, pi[1] - scale)
+        xy4 = (pi[0] - scale, pi[1] + scale)
+        z1, z2, z3, z4 = get_plane_z(xy1, pi), get_plane_z(xy2, pi), get_plane_z(xy3, pi), get_plane_z(xy4, pi)
+
         mesh = o3d.geometry.TriangleMesh()
-        np_vertices = np.array([[2, 2, 0],
-                                [5, 2, 0],
-                                [5, 5, 0],
-                                [2, 5, 0]])
+        np_vertices = np.array([[xy1[0], xy1[1], z1],
+                                [xy2[0], xy2[1], z2],
+                                [xy3[0], xy3[1], z3],
+                                [xy4[0], xy4[1], z4]])
         np_triangles = np.array([[0, 1, 2], [0,2,3]]).astype(np.int32)
+
+        print(np_vertices)
 
         mesh.vertices = o3d.utility.Vector3dVector(np_vertices)
         mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
+        mesh.paint_uniform_color([r, g, b])
         self.insert_geometry(mesh)
 
     def insert_geometry(self, mesh):

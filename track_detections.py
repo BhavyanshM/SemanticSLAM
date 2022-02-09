@@ -13,20 +13,20 @@ class TrackingApp:
 
         self.kitti_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/sequences/00/image_0/'
         self.kitti_detections_path = '/home/quantum/Workspace/Storage/Other/Temp/dataset/sequences/00/detections_0/'
-        self.kitti_imgs = sorted(os.listdir(self.kitti_path))
-        self.mot = SemanticFeatureMatcher()
-        self.detections = load_detections(self.kitti_detections_path + self.kitti_imgs[0].replace('image_0', 'detections_0').replace('.png', '.txt'))
+
+        self.kitti_imgs = sorted(os.listdir(self.kitti_path)) if os.path.isdir(self.kitti_path) else None
+        self.detections = load_detections(self.kitti_detections_path + self.kitti_imgs[0].replace('image_0', 'detections_0').replace('.png', '.txt')) if os.path.isdir(self.kitti_path) else []
+        self.prevImg = cv2.imread(self.kitti_path + self.kitti_imgs[0]) if os.path.isdir(self.kitti_path) else None
+
         self.objects = create_tracks(self.detections)
+        self.mot = SemanticFeatureMatcher()
         self.mot.initialize_tracks(self.objects)
-        self.prevImg = cv2.imread(self.kitti_path + self.kitti_imgs[0])
         self.renderer = Open3DRenderer()
         self.pose = np.eye(4)
         self.delta_pose = np.eye(4)
         self.delta_pose[0, 3] = 0.1
 
-        self.renderer.submit_quad(self.pose)
 
-        self.mot.triangulate_convex_polytope(None, None)
 
     def run(self):
         for file in self.kitti_imgs:
@@ -62,6 +62,21 @@ class TrackingApp:
             #     cv2.waitKey(0)
             #     exit()
 
+    def run_no_data(self):
+        while True:
+            self.pose = self.pose @ self.delta_pose
+
+            self.renderer.update()
+
+    def init(self):
+        self.renderer.submit_quad(get_plane(np.array([0, 0, 0]), np.array([1, 0, -1])), 2.0, 0.3, 0.4, 0.6)
+        self.renderer.submit_quad(get_plane(np.array([0, 0, 0]), np.array([-1, 0, 1])), 2.0, 0.3, 0.4, 0.6)
+        self.renderer.submit_quad(get_plane(np.array([0, 1, -2]), np.array([0, 0, 1])), 2.0, 0.5, 0.7, 0.3)
+        self.renderer.submit_quad(get_plane(np.array([0, -1, -1]), np.array([0, 0, 1])), 2.0, 0.7, 0.3, 0.6)
+
+        # self.mot.triangulate_convex_polytope(None, None)
+
 if __name__ == "__main__":
     app = TrackingApp()
-    app.run()
+    app.init()
+    app.run_no_data()
