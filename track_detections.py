@@ -24,6 +24,10 @@ class TrackingApp:
         self.delta_pose = np.eye(4)
         self.delta_pose[0, 3] = 0.1
 
+        self.renderer.submit_quad(self.pose)
+
+        self.mot.triangulate_convex_polytope(None, None)
+
     def run(self):
         for file in self.kitti_imgs:
             img = cv2.imread(self.kitti_path + file)
@@ -44,8 +48,6 @@ class TrackingApp:
             self.mot.features = objects
 
             self.pose = self.pose @ self.delta_pose
-
-            print(self.pose, self.delta_pose)
 
             self.renderer.submit_pose(self.pose)
             self.renderer.update()
