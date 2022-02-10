@@ -46,26 +46,22 @@ class Open3DRenderer:
         self.axes.append(o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(t[0], t[1], t[2])))
         self.insert_geometry(self.axes[-1])
 
-    def submit_quad(self, pi, scale=0.5, r = 1, g = 0.706, b = 0):
-
-        xy1 = (pi[0] + scale, pi[1] + scale)
-        xy2 = (pi[0] + scale, pi[1] - scale)
-        xy3 = (pi[0] - scale, pi[1] - scale)
-        xy4 = (pi[0] - scale, pi[1] + scale)
+    def submit_quad(self, point, normal, scale_x=0.5, scale_y=0.5, color=[0.5, 0.1, 0.6]):
+        pi = get_plane(point, normal)
+        xy1 = (point[0] + scale_x, point[1] + scale_y)
+        xy2 = (point[0] + scale_x, point[1] - scale_y)
+        xy3 = (point[0] - scale_x, point[1] - scale_y)
+        xy4 = (point[0] - scale_x, point[1] + scale_y)
         z1, z2, z3, z4 = get_plane_z(xy1, pi), get_plane_z(xy2, pi), get_plane_z(xy3, pi), get_plane_z(xy4, pi)
-
         mesh = o3d.geometry.TriangleMesh()
         np_vertices = np.array([[xy1[0], xy1[1], z1],
                                 [xy2[0], xy2[1], z2],
                                 [xy3[0], xy3[1], z3],
                                 [xy4[0], xy4[1], z4]])
         np_triangles = np.array([[0, 1, 2], [0,2,3]]).astype(np.int32)
-
-        print(np_vertices)
-
         mesh.vertices = o3d.utility.Vector3dVector(np_vertices)
         mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
-        mesh.paint_uniform_color([r, g, b])
+        mesh.paint_uniform_color([color[0], color[1], color[2]])
         self.insert_geometry(mesh)
 
     def insert_geometry(self, mesh):

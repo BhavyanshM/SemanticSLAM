@@ -78,10 +78,31 @@ def plot_associations(img, mot, detections):
 
 def get_plane(point, normal):
     plane = np.array([normal[0], normal[1], normal[2], -np.dot(point, normal)])
-    print("Plane:", plane)
+    print("Point:", point, "Normal:", normal, "Plane:", plane)
     return plane
 
 def get_plane_z(p, pi):
     z = -(np.dot(pi[:2], p) + pi[3])
-    print("Z:", z)
     return z
+
+def find_plane_intersection(pi1, pi2, pi3):
+    A = np.zeros(shape=(3, 4))
+    A[0, :] = pi1
+    A[1, :] = pi2
+    A[2, :] = pi3
+
+    print(A)
+
+    # A_inv = np.linalg.inv(A.T @ A) @ A.T
+    U, S, V = np.linalg.svd(A.T)
+
+    x = U[:, 3]
+    x /= x[3]
+
+    print(U)
+    print(S)
+    print(V)
+
+    print("Solution:", x)
+
+    return x
