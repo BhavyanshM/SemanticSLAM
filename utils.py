@@ -107,19 +107,40 @@ def find_plane_intersection(pi1, pi2, pi3):
 
     print("Solution:", x)
 
-    return x
+    return x[:3]
 
-def triangulate_convex_polytope(det1, det2):
+def triangulate_convex_polytope(det1, det2, pose):
 
     ps1 = get_planes_from_detection(det1)
     ps2 = get_planes_from_detection(det2)
 
-    return ps1, ps2
+    pi_const_z1 = get_plane(np.array([0,1,0]), np.array([0,1,0]))
+    pi_const_z2 = get_plane(np.array([0, -1, 0]), np.array([0, 1, 0]))
+
+    tp1, np1 = transform_plane(np.hstack([np.array([0, 0, 0]), ps2[0][:3]]), pose)
+    tp2, np2 = transform_plane(np.hstack([np.array([0, 0, 0]), ps2[1][:3]]), pose)
+
+    pi_ps2 = (np.hstack([tp1, np1[:3]]), np.hstack([tp2, np2[:3]]))
+
+    ps2 = (np1, np2)
+
+    points = []
+    points.append(find_plane_intersection(ps1[0], ps2[0], pi_const_z1))
+    points.append(find_plane_intersection(ps1[0], ps2[1], pi_const_z1))
+    points.append(find_plane_intersection(ps1[1], ps2[1], pi_const_z1))
+    points.append(find_plane_intersection(ps1[1], ps2[0], pi_const_z1))
+
+    points.append(find_plane_intersection(ps1[0], ps2[0], pi_const_z2))
+    points.append(find_plane_intersection(ps1[0], ps2[1], pi_const_z2))
+    points.append(find_plane_intersection(ps1[1], ps2[1], pi_const_z2))
+    points.append(find_plane_intersection(ps1[1], ps2[0], pi_const_z2))
+
+    return ps1, pi_ps2, np.vstack(points)
 
 
 
 def get_planes_from_detection(det):
-    fx, cx, fy, cy = 718, 607, 718, 18
+    fx, cx, fy, cy = 718, 607, 718, 185
     cls, x, y, w, h = det
 
     vec_tl = np.array([((x - w/2) - cx) / fx, ((y - h/2) - cy) / fy, 1])
@@ -130,8 +151,8 @@ def get_planes_from_detection(det):
     vec_br = np.array([((x + w / 2) - cx) / fx, ((y + h / 2) - cy) / fy, 1])
     normal_r = np.cross(vec_tr, vec_br)
 
-    pi_l = np.hstack([np.array([0, 0, 0]), normal_l])
-    pi_r = np.hstack([np.array([0, 0, 0]), normal_r])
+    pi_l = get_plane(np.array([0, 0, 0]), normal_l)
+    pi_r = get_plane(np.array([0, 0, 0]), normal_r)
 
     return [pi_l, pi_r]
 
@@ -143,7 +164,9 @@ def transform_plane(plane, transform):
     point = (transform @ p)[:3]
     normal = transform[:3,:3] @ plane[3:]
 
-    return np.hstack([point, normal])
+    pi = get_plane(point, normal)
+
+    return (point, pi)
 
 
 

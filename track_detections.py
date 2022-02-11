@@ -24,8 +24,9 @@ class TrackingApp:
         self.mot.initialize_tracks(self.objects)
         self.renderer = Open3DRenderer()
         self.pose = np.eye(4)
-        self.delta_pose = get_rotation_y(0.5)
-        # self.delta_pose[0, 3] = 3
+        self.delta_pose = get_rotation_y(0.4)
+        self.delta_pose[0, 3] = 1
+        self.delta_pose[2, 3] = 2
 
 
 
@@ -74,21 +75,21 @@ class TrackingApp:
         p2 = (np.array([-3, 0, 4]), np.array([4.1, 0, 3]))
         p3 = (np.array([0, 1, 0]), np.array([0, 1, 1]))
 
-        ps1, ps2 = triangulate_convex_polytope((0, 300, 250, 480, 390), (0, 200, 150, 120, 80))
+        ps1, ps2, points = triangulate_convex_polytope((0, 300, 250, 180, 100), (0, 200, 150, 120, 80), self.delta_pose)
 
         print(ps1)
 
 
-        self.renderer.submit_quad(ps1[0][:3], ps1[0][3:], 4.0, 1.0, [0.3, 0.4, 0.6])
-        self.renderer.submit_quad(ps1[1][:3], ps1[1][3:], 4.0, 1.0, [0.6, 0.7, 0.3])
+        self.renderer.submit_quad(np.array([0,0,0]), ps1[0][:3], 5.0, 1.0, [0.3, 0.4, 0.6])
+        self.renderer.submit_quad(np.array([0,0,0]), ps1[1][:3], 5.0, 1.0, [0.6, 0.7, 0.3])
 
+        self.renderer.submit_quad(ps2[0][:3], ps2[0][3:], 5.0, 1.0, [0.5, 0.8, 0.3])
+        self.renderer.submit_quad(ps2[1][:3], ps2[1][3:], 5.0, 1.0, [0.3, 0.7, 0.5])
 
+        print("Shape Points:", points.shape)
 
-        np1 = transform_plane(ps1[0], self.delta_pose)
-        np2 = transform_plane(ps1[1], self.delta_pose)
-
-        self.renderer.submit_quad(np1[:3], np1[3:], 4.0, 1.0, [0.3, 0.4, 0.6])
-        self.renderer.submit_quad(np2[:3], np2[3:], 4.0, 1.0, [0.6, 0.7, 0.3])
+        for i in range(points.shape[0]):
+            self.renderer.submit_sphere(points[i])
 
         # self.renderer.submit_quad(p1[0], p1[1], 4.0, 1.0, [0.3, 0.4, 0.6])
         # self.renderer.submit_quad(p2[0], p2[1], 4.0, 1.0, [0.3, 0.4, 0.6])

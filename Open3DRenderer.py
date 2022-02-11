@@ -3,6 +3,7 @@ import numpy as np
 from utils import *
 import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
+import copy
 
 class Open3DRenderer:
     def __init__(self):
@@ -45,6 +46,13 @@ class Open3DRenderer:
         t = pose[:,3]
         self.axes.append(o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(t[0], t[1], t[2])))
         self.insert_geometry(self.axes[-1])
+
+    def submit_sphere(self, center, radius=0.1):
+        sphere = o3d.geometry.TriangleMesh.create_sphere(radius, 20)
+        # sphere.translate(1,1,1)
+        mesh = copy.deepcopy(sphere).translate((center[0], center[1], center[2]))
+        self.insert_geometry(mesh)
+
 
     def submit_quad(self, point, normal, scale_x=0.5, scale_y=0.5, color=[0.5, 0.1, 0.6]):
         pi = get_plane(point, normal)
