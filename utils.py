@@ -136,6 +136,15 @@ def get_planes_from_detection(det):
     return [pi_l, pi_r]
 
 
+def transform_plane(plane, transform):
+    p = np.ones(shape=(4,))
+    p[:3] = plane[:3]
+
+    point = (transform @ p)[:3]
+    normal = transform[:3,:3] @ plane[3:]
+
+    return np.hstack([point, normal])
+
 
 
 

@@ -5,6 +5,7 @@ import numpy as np
 from KITTI_Classes import *
 from utils import *
 from SemanticFeatureMatcher import *
+from TransformUtils import *
 
 from Open3DRenderer import *
 
@@ -23,8 +24,8 @@ class TrackingApp:
         self.mot.initialize_tracks(self.objects)
         self.renderer = Open3DRenderer()
         self.pose = np.eye(4)
-        self.delta_pose = np.eye(4)
-        self.delta_pose[0, 3] = 0.1
+        self.delta_pose = get_rotation_y(0.5)
+        # self.delta_pose[0, 3] = 3
 
 
 
@@ -80,6 +81,14 @@ class TrackingApp:
 
         self.renderer.submit_quad(ps1[0][:3], ps1[0][3:], 4.0, 1.0, [0.3, 0.4, 0.6])
         self.renderer.submit_quad(ps1[1][:3], ps1[1][3:], 4.0, 1.0, [0.6, 0.7, 0.3])
+
+
+
+        np1 = transform_plane(ps1[0], self.delta_pose)
+        np2 = transform_plane(ps1[1], self.delta_pose)
+
+        self.renderer.submit_quad(np1[:3], np1[3:], 4.0, 1.0, [0.3, 0.4, 0.6])
+        self.renderer.submit_quad(np2[:3], np2[3:], 4.0, 1.0, [0.6, 0.7, 0.3])
 
         # self.renderer.submit_quad(p1[0], p1[1], 4.0, 1.0, [0.3, 0.4, 0.6])
         # self.renderer.submit_quad(p2[0], p2[1], 4.0, 1.0, [0.3, 0.4, 0.6])
