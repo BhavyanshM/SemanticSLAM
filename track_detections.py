@@ -73,13 +73,21 @@ class TrackingApp:
         p2 = (np.array([-3, 0, 4]), np.array([4.1, 0, 3]))
         p3 = (np.array([0, 1, 0]), np.array([0, 1, 1]))
 
-        self.renderer.submit_quad(p1[0], p1[1], 4.0, 1.0, [0.3, 0.4, 0.6])
-        self.renderer.submit_quad(p2[0], p2[1], 4.0, 1.0, [0.3, 0.4, 0.6])
-        self.renderer.submit_quad(p3[0], p3[1], 2.5, 2.5, [0.7, 0.6, 0.6])
+        ps1, ps2 = triangulate_convex_polytope((0, 300, 250, 480, 390), (0, 200, 150, 120, 80))
 
-        x = find_plane_intersection(get_plane(p1[0], p1[1]),
-                                    get_plane(p2[0], p2[1]),
-                                    get_plane(p3[0], p3[1]))
+        print(ps1)
+
+
+        self.renderer.submit_quad(ps1[0][:3], ps1[0][3:], 4.0, 1.0, [0.3, 0.4, 0.6])
+        self.renderer.submit_quad(ps1[1][:3], ps1[1][3:], 4.0, 1.0, [0.6, 0.7, 0.3])
+
+        # self.renderer.submit_quad(p1[0], p1[1], 4.0, 1.0, [0.3, 0.4, 0.6])
+        # self.renderer.submit_quad(p2[0], p2[1], 4.0, 1.0, [0.3, 0.4, 0.6])
+        # self.renderer.submit_quad(p3[0], p3[1], 2.5, 2.5, [0.7, 0.6, 0.6])
+
+        # x = find_plane_intersection(get_plane(p1[0], p1[1]),
+        #                             get_plane(p2[0], p2[1]),
+        #                             get_plane(p3[0], p3[1]))
 
         # self.renderer.submit_quad(get_plane(np.array([0, 0, 0]), np.array([-1, 0, 1])), 2.0, 0.3, 0.4, 0.6)
         #

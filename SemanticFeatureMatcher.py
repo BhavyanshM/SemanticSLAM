@@ -39,31 +39,6 @@ class SemanticFeatureMatcher:
         #     if self.table[i, self.matches[i]] != 0:
         #         self.features[i].append(objects[self.matches[i]])
 
-    def triangulate_convex_polytope(self, det1, det2):
-        A = np.zeros(shape=(6,4))
-        A[:,3] = -1
-        A[0,0] = 1
-        A[1, 1] = 2
-        A[2, 2] = 5
 
-        A[1,3] = -4
-        A[2, 3] = -25
-
-        A[3:6, :] = A[:3, :].copy()
-
-        print(A)
-
-        # A_inv = np.linalg.inv(A.T @ A) @ A.T
-
-        U, S, V = np.linalg.svd(A.T)
-
-        x = U[:,3]
-        x /= x[3]
-
-        print(U)
-        print(S)
-        print(V)
-
-        print("Solution:", x)
 
 

@@ -1,4 +1,6 @@
 import cv2
+import numpy as np
+
 from SemanticFeature import *
 
 def create_tracks(detections):
@@ -82,7 +84,7 @@ def get_plane(point, normal):
     return plane
 
 def get_plane_z(p, pi):
-    z = -(np.dot(pi[:2], p) + pi[3])
+    z = -(np.dot(pi[:2], p) + pi[3]) / pi[2]
     return z
 
 def find_plane_intersection(pi1, pi2, pi3):
@@ -106,3 +108,54 @@ def find_plane_intersection(pi1, pi2, pi3):
     print("Solution:", x)
 
     return x
+
+def triangulate_convex_polytope(det1, det2):
+
+    ps1 = get_planes_from_detection(det1)
+    ps2 = get_planes_from_detection(det2)
+
+    return ps1, ps2
+
+
+
+def get_planes_from_detection(det):
+    fx, cx, fy, cy = 718, 607, 718, 18
+    cls, x, y, w, h = det
+
+    vec_tl = np.array([((x - w/2) - cx) / fx, ((y - h/2) - cy) / fy, 1])
+    vec_bl = np.array([((x - w / 2) - cx) / fx, ((y + h / 2) - cy) / fy, 1])
+    normal_l = np.cross(vec_tl, vec_bl)
+
+    vec_tr = np.array([((x + w / 2) - cx) / fx, ((y - h / 2) - cy) / fy, 1])
+    vec_br = np.array([((x + w / 2) - cx) / fx, ((y + h / 2) - cy) / fy, 1])
+    normal_r = np.cross(vec_tr, vec_br)
+
+    pi_l = np.hstack([np.array([0, 0, 0]), normal_l])
+    pi_r = np.hstack([np.array([0, 0, 0]), normal_r])
+
+    return [pi_l, pi_r]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
