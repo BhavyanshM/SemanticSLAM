@@ -72,6 +72,33 @@ class Open3DRenderer:
         mesh.paint_uniform_color([color[0], color[1], color[2]])
         self.insert_geometry(mesh)
 
+    def submit_polytope(self, points):
+        mesh = o3d.geometry.TriangleMesh()
+
+        np_vertices = []
+        for i in range(points.shape[0]):
+            np_vertices.append(points[i].tolist())
+
+        np_triangles = np.array([[0, 1, 2],
+                                 [0, 2, 3],
+                                 [0, 4, 5],
+                                 [0, 5, 1],
+                                 [1, 5, 6],
+                                 [1, 6, 2],
+                                 [2, 6, 7],
+                                 [2, 7, 3],
+                                 [3, 7, 4],
+                                 [3, 4, 0],
+                                 [4, 5, 6],
+                                 [4, 6, 7]
+                                 ]).astype(np.int32)
+
+
+        mesh.vertices = o3d.utility.Vector3dVector(np_vertices)
+        mesh.triangles = o3d.utility.Vector3iVector(np_triangles)
+        mesh.paint_uniform_color([0.5, 0.5, 0.5])
+        self.insert_geometry(mesh)
+
     def insert_geometry(self, mesh):
         params = self.control.convert_to_pinhole_camera_parameters()
         self.vis.add_geometry(mesh)

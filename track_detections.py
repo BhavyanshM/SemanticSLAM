@@ -25,8 +25,8 @@ class TrackingApp:
         self.renderer = Open3DRenderer()
         self.pose = np.eye(4)
         self.delta_pose = get_rotation_y(0.4)
-        self.delta_pose[0, 3] = 1
-        self.delta_pose[2, 3] = 2
+        self.delta_pose[0, 3] = 5
+        self.delta_pose[2, 3] = 0
 
 
 
@@ -66,8 +66,6 @@ class TrackingApp:
 
     def run_no_data(self):
         while True:
-            self.pose = self.pose @ self.delta_pose
-
             self.renderer.update()
 
     def init(self):
@@ -88,8 +86,12 @@ class TrackingApp:
 
         print("Shape Points:", points.shape)
 
+
         for i in range(points.shape[0]):
             self.renderer.submit_sphere(points[i])
+
+
+        self.renderer.submit_polytope(points)
 
         # self.renderer.submit_quad(p1[0], p1[1], 4.0, 1.0, [0.3, 0.4, 0.6])
         # self.renderer.submit_quad(p2[0], p2[1], 4.0, 1.0, [0.3, 0.4, 0.6])
