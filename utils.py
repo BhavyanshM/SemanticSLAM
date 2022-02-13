@@ -59,7 +59,6 @@ def display(img):
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Image", int(img.shape[1]*1.3), int(img.shape[0]*1.3))
     cv2.imshow("Image", img)
-    print("Shape:", img.shape)
     code = cv2.waitKeyEx(20)
     if code == 32:
         code = cv2.waitKeyEx(0)
