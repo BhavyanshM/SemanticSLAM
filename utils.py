@@ -59,7 +59,7 @@ def display(img):
     cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Image", int(img.shape[1]*1.3), int(img.shape[0]*1.3))
     cv2.imshow("Image", img)
-    code = cv2.waitKeyEx(20)
+    code = cv2.waitKeyEx(0)
     if code == 32:
         code = cv2.waitKeyEx(0)
     if code == 113:
@@ -79,7 +79,6 @@ def plot_associations(img, mot, detections):
 
 def get_plane(point, normal):
     plane = np.array([normal[0], normal[1], normal[2], -np.dot(point, normal)])
-    print("Point:", point, "Normal:", normal, "Plane:", plane)
     return plane
 
 def get_plane_z(p, pi):
@@ -92,19 +91,11 @@ def find_plane_intersection(pi1, pi2, pi3):
     A[1, :] = pi2
     A[2, :] = pi3
 
-    print(A)
-
     # A_inv = np.linalg.inv(A.T @ A) @ A.T
     U, S, V = np.linalg.svd(A.T)
 
     x = U[:, 3]
     x /= x[3]
-
-    print(U)
-    print(S)
-    print(V)
-
-    print("Solution:", x)
 
     return x[:3]
 

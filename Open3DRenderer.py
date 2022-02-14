@@ -99,6 +99,9 @@ class Open3DRenderer:
         mesh.paint_uniform_color([0.5, 0.5, 0.5])
         self.insert_geometry(mesh)
 
+        for i in range(points.shape[0]):
+            self.submit_sphere(points[i])
+
     def insert_geometry(self, mesh):
         params = self.control.convert_to_pinhole_camera_parameters()
         self.vis.add_geometry(mesh)
