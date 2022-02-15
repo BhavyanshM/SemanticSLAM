@@ -8,6 +8,7 @@ from SemanticFeatureMatcher import *
 from TransformUtils import *
 
 from Open3DRenderer import *
+np.set_printoptions(suppress=True, precision=4, linewidth=np.inf)
 
 class TrackingApp:
     def __init__(self):
@@ -92,26 +93,34 @@ class TrackingApp:
         print("Pose: ")
         print(pose)
 
+        print(self.matcher.table)
+        print(self.matcher.matches)
+
         for i in range(len(self.matcher.features)):
+            if self.matcher.table[i, self.matcher.matches[i]] != 0:
 
-            det1 = self.matcher.features[i].bbox
-            det2 = objects[self.matcher.matches[i]].bbox
+                det1 = self.matcher.features[i].bbox
+                det2 = objects[self.matcher.matches[i]].bbox
 
-            print("Detectiosn: ", det1, det2)
+                print("Detections: ", det1, det2)
 
-            ps1, ps2, polytope = triangulate_convex_polytope(det2, det1, pose)
+                psx1, psx2, polytope_x = triangulate_convex_polytope(det2, det1, pose, axis=0)
+                psy1, psy2, polytope_y = triangulate_convex_polytope(det2, det1, pose, axis=1)
 
-            self.renderer.submit_pose(pose)
+                self.renderer.submit_pose(pose)
 
-            # self.renderer.submit_quad(np.array([0,0,0]), ps1[0][:3], 5.0, 1.0, [0.3, 0.4, 0.6])
-            # self.renderer.submit_quad(np.array([0,0,0]), ps1[1][:3], 5.0, 1.0, [0.6, 0.7, 0.3])
-            #
-            # self.renderer.submit_quad(ps2[0][:3], ps2[0][3:], 5.0, 1.0, [0.5, 0.8, 0.3])
-            # self.renderer.submit_quad(ps2[1][:3], ps2[1][3:], 5.0, 1.0, [0.3, 0.7, 0.5])
+                # self.renderer.submit_quad(np.array([0,0,0]), ps1[0][:3], 5.0, 1.0, [0.3, 0.4, 0.6])
+                # self.renderer.submit_quad(np.array([0,0,0]), ps1[1][:3], 5.0, 1.0, [0.6, 0.7, 0.3])
+                #
+                # self.renderer.submit_quad(ps2[0][:3], ps2[0][3:], 5.0, 1.0, [0.5, 0.8, 0.3])
+                # self.renderer.submit_quad(ps2[1][:3], ps2[1][3:], 5.0, 1.0, [0.3, 0.7, 0.5])
 
-            # self.renderer.submit_polytope(polytope)
+                # self.renderer.submit_polytope(polytope)
 
-            self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.1)
+                polytope = polytope_x + polytope_y
+                polytope[:,2] /= 2
+
+                self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.1)
 
 
 

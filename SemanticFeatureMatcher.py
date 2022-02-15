@@ -1,6 +1,6 @@
 import numpy as np
 from utils import *
-np.set_printoptions(suppress=True, precision=2, linewidth=np.inf)
+
 
 class SemanticFeatureMatcher:
     def __init__(self):
