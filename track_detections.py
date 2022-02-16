@@ -123,9 +123,9 @@ class TrackingApp:
                 polytope = polytope_x + polytope_y
                 polytope[:,2] /= 2
 
-                self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.1)
-                self.renderer.submit_sphere(point1/4, radius=0.1, color=[0.4, 0.8, 0.5])
-                self.renderer.submit_sphere(point2/4, radius=0.1, color=[0.4, 0.4, 0.8])
+                self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.3)
+                self.renderer.submit_sphere(point1/4, radius=0.3, color=[0.4, 0.8, 0.5])
+                self.renderer.submit_sphere(point2/4, radius=0.3, color=[0.4, 0.4, 0.8])
 
 
 
