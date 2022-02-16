@@ -107,6 +107,9 @@ class TrackingApp:
                 psx1, psx2, polytope_x = triangulate_convex_polytope(det2, det1, pose, axis=0)
                 psy1, psy2, polytope_y = triangulate_convex_polytope(det2, det1, pose, axis=1)
 
+                point1 = get_object_location_from_size(det1, 2.0)
+                point2 = get_object_location_from_size(det2, 2.0)
+
                 self.renderer.submit_pose(pose)
 
                 # self.renderer.submit_quad(np.array([0,0,0]), ps1[0][:3], 5.0, 1.0, [0.3, 0.4, 0.6])
@@ -121,6 +124,8 @@ class TrackingApp:
                 polytope[:,2] /= 2
 
                 self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.1)
+                self.renderer.submit_sphere(point1/4, radius=0.1, color=[0.4, 0.8, 0.5])
+                self.renderer.submit_sphere(point2/4, radius=0.1, color=[0.4, 0.4, 0.8])
 
 
 

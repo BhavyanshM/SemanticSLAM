@@ -47,10 +47,11 @@ class Open3DRenderer:
         self.axes.append(o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(t[0], t[1], t[2])))
         self.insert_geometry(self.axes[-1])
 
-    def submit_sphere(self, center, radius=0.1):
+    def submit_sphere(self, center, radius=0.1, color=[1.0,1.0,1.0]):
         sphere = o3d.geometry.TriangleMesh.create_sphere(radius, 20)
         # sphere.translate(1,1,1)
         mesh = copy.deepcopy(sphere).translate((center[0], center[1], center[2]))
+        mesh.paint_uniform_color([color[0], color[1], color[2]])
         self.insert_geometry(mesh)
 
 

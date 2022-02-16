@@ -102,6 +102,14 @@ def find_plane_intersection(pi1, pi2, pi3):
 
     return x[:3]
 
+def get_object_location_from_size(det, size, focal_length=718):
+    fx, cx, fy, cy = 718, 607, 718, 185
+    cls, x, y, w, h = det
+    depth = focal_length * size / det[3]
+    point = np.array([(x - cx) / fx, (y - cy) / fy, 1]) * depth
+    return point
+
+
 def triangulate_convex_polytope(det1, det2, pose, axis=0):
 
     ps1 = get_planes_from_detection(det1, axis)
