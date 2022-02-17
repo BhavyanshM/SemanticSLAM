@@ -55,10 +55,10 @@ def compute_iou(bbox1, bbox2):
 
     return iou
 
-def display(img):
-    cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Image", int(img.shape[1]*1.3), int(img.shape[0]*1.3))
-    cv2.imshow("Image", img)
+def display(img, name='Image'):
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(name, int(img.shape[1]*1.3), int(img.shape[0]*1.3))
+    cv2.imshow(name, img)
     code = cv2.waitKeyEx(0)
     if code == 32:
         code = cv2.waitKeyEx(0)
