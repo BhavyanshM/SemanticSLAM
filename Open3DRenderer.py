@@ -6,35 +6,45 @@ import open3d.visualization.rendering as rendering
 import copy
 
 class Open3DRenderer:
-    def __init__(self):
-        self.vis = o3d.visualization.Visualizer()
-        self.vis.create_window()
-        self.rend_opt = self.vis.get_render_option()
-        self.rend_opt.mesh_show_back_face = True
-        self.rend_opt.background_color = np.asarray([0, 0, 0])
-        self.rend_opt.light_on = True
-        self.pcd = o3d.geometry.PointCloud()
-        self.axes = [o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0))]
-        self.line_set = o3d.geometry.LineSet()
+    def __init__(self, render=True):
 
-        self.vis.add_geometry(self.line_set)
-        self.vis.add_geometry(self.axes[0])
-        self.vis.add_geometry(self.pcd)
+        if render:
+            self.vis = o3d.visualization.Visualizer()
+            self.vis.create_window()
 
-        # gui.Application.instance.initialize()
-        # self.window = gui.Application.instance.create_window("use_point_light", 500, 500)
-        # self.scene_widget = gui.SceneWidget()
-        # self.scene_widget.scene = rendering.Open3DScene(self.window.renderer)
-        # self.window.add_child(self.scene_widget)
-        # self.scene_widget.scene.scene.add_point_light('light', [1, 1, 1], -3 * np.array([-1,-1,0]), 1e8, 1e2, True)
+            self.rend_opt = self.vis.get_render_option()
+            self.rend_opt.mesh_show_back_face = True
+            self.rend_opt.background_color = np.asarray([0, 0, 0])
+            self.rend_opt.light_on = True
+            self.pcd = o3d.geometry.PointCloud()
+            self.axes = [o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0), size=0.4)]
+            self.line_set = o3d.geometry.LineSet()
 
-        self.control = self.vis.get_view_control()
+            self.vis.add_geometry(self.line_set)
+            self.vis.add_geometry(self.axes[0])
+            self.vis.add_geometry(self.pcd)
 
-        self.control.unset_constant_z_near()
+            # gui.Application.instance.initialize()
+            # self.window = gui.Application.instance.create_window("use_point_light", 500, 500)
+            # self.scene_widget = gui.SceneWidget()
+            # self.scene_widget.scene = rendering.Open3DScene(self.window.renderer)
+            # self.window.add_child(self.scene_widget)
+            # self.scene_widget.scene.scene.add_point_light('light', [1, 1, 1], -3 * np.array([-1,-1,0]), 1e8, 1e2, True)
+
+            self.control = self.vis.get_view_control()
+
+            # self.control.set_constant_z_far(50)
 
     def submit_points(self, xyz, colors=None):
         if colors is not None:
             self.pcd.colors = o3d.utility.Vector3dVector(colors)
+        else:
+            clr =[0.1, 0.2, 0.2]
+            color_array = np.repeat(np.array([clr]), xyz.shape[0], axis=0)
+            color_array[:,1] = xyz[:,2] / 200
+            color_array[:, 1] = xyz[:, 2] / 200
+            self.pcd.colors = o3d.utility.Vector3dVector(color_array)
+
         self.pcd.points = o3d.utility.Vector3dVector(xyz)
 
     def submit_lines(self, points, lines, line_colors):

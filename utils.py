@@ -55,11 +55,11 @@ def compute_iou(bbox1, bbox2):
 
     return iou
 
-def display(img, name='Image'):
+def display(img, name='Image', time=0):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, int(img.shape[1]*1.3), int(img.shape[0]*1.3))
     cv2.imshow(name, img)
-    code = cv2.waitKeyEx(0)
+    code = cv2.waitKeyEx(time)
     if code == 32:
         code = cv2.waitKeyEx(0)
     if code == 113:
@@ -173,7 +173,17 @@ def transform_plane(plane, transform):
 
     return (point, pi)
 
-
+def create_pointcloud_from_depth(depth):
+    fx, cx, fy, cy = 718, 607, 718, 185
+    points = []
+    for y in range(depth.shape[0]):
+        for x in range(depth.shape[1]):
+            Z = depth[y,x]
+            Y = (y - cy) / fy * Z
+            X = (x - cx) / fx * Z
+            points.append(np.array([X, Y, Z]))
+    points = np.array(points)
+    return points[points[:,2] < 200]
 
 
 

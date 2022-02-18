@@ -12,7 +12,7 @@ from Open3DRenderer import *
 np.set_printoptions(suppress=True, precision=4, linewidth=np.inf)
 
 class TrackingApp:
-    def __init__(self):
+    def __init__(self, render=True):
 
         self.start = 160
         self.end = 161
@@ -32,7 +32,8 @@ class TrackingApp:
         self.objects = create_tracks(self.detections)
         self.matcher = SemanticFeatureMatcher()
         self.matcher.initialize_tracks(self.objects)
-        self.renderer = Open3DRenderer()
+
+        self.renderer = Open3DRenderer(render)
 
         self.pose = np.eye(4)
         self.delta_pose = get_rotation_y(0.4)
@@ -54,7 +55,7 @@ class TrackingApp:
         combined = combine_images_vertical(prevImg, img)
 
         plot_associations(combined, self.matcher, objects)
-        display(combined)
+        # display(combined)
 
         return objects, img
 
@@ -104,7 +105,14 @@ class TrackingApp:
         print(self.matcher.table)
         print(self.matcher.matches)
 
-        self.slam.compute_stereo_depth(leftImage, rightImage)
+        self.slam.show_trackbars()
+        while True:
+            depth = self.slam.compute_stereo_depth(leftImage, rightImage)
+
+        cloud = create_pointcloud_from_depth(depth)
+
+        self.renderer.submit_points(cloud * 2)
+
         #
         # for i in range(len(self.matcher.features)):
         #     if self.matcher.table[i, self.matcher.matches[i]] != 0:
@@ -140,6 +148,6 @@ class TrackingApp:
 
 
 if __name__ == "__main__":
-    app = TrackingApp()
+    app = TrackingApp(render=False)
     app.init_experimental()
     app.run_no_data()
