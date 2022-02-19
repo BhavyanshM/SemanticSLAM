@@ -185,6 +185,46 @@ def create_pointcloud_from_depth(depth):
     points = np.array(points)
     return points[points[:,2] < 200]
 
+def extract_object_points(depth, objects):
+    fx, cx, fy, cy = 718, 607, 718, 185
+    clouds = []
+    X = np.zeros_like(depth)
+    Y = np.zeros_like(depth)
+
+    for i in range(X.shape[1]):
+        X[:,i] = i
+        print(X[:,i].tolist())
+
+    for i in range(Y.shape[0]):
+        Y[i,:] = i
+
+    print(Y)
+
+    size = depth.shape[0] * depth.shape[1]
+    X = X.reshape((size,))
+    Y = Y.reshape((size,))
+    D = depth.reshape((size, ))
+
+    cloud = np.vstack([X,Y,D])
+
+
+    for obj in objects:
+        cls, x, y, w, h = obj.bbox
+        condition_x = np.logical_and(cloud[0,:] > x - w/2, cloud[0, :] < x + w / 2)
+        condition_y = np.logical_and(cloud[1, :] > y - h / 2, cloud[1, :] < y + h / 2)
+        condition = np.logical_and(condition_x, condition_y)
+        points = cloud[:, condition]
+
+        xs, ys, zs = points[0, :], points[1, :], points[2, :]
+
+        points[0, :] = (xs - cx) / fx * zs
+        points[1, :] = (ys - cy) / fy * zs
+
+        clouds.append(points.T)
+
+        print(cls, points.shape, x, y, w, h)
+
+    return clouds
 
 
 

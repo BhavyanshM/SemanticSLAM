@@ -68,7 +68,6 @@ class TrackingApp:
             self.matcher.features = objects
 
 
-
     def run_no_data(self):
         gt = np.loadtxt('/home/quantum/Workspace/Storage/Other/Temp/dataset/data_odometry_poses/poses/00.txt', delimiter=' ')
         i = 0
@@ -79,6 +78,7 @@ class TrackingApp:
 
             self.renderer.update()
             i+=1
+
 
     def init_experimental(self):
 
@@ -105,49 +105,49 @@ class TrackingApp:
         print(self.matcher.table)
         print(self.matcher.matches)
 
-        self.slam.show_trackbars()
-        while True:
-            depth = self.slam.compute_stereo_depth(leftImage, rightImage)
+        depth = self.slam.compute_stereo_depth(leftImage, rightImage)
 
-        cloud = create_pointcloud_from_depth(depth)
+        # cloud = create_pointcloud_from_depth(depth)
 
-        self.renderer.submit_points(cloud * 2)
+        clouds = extract_object_points(depth, objects)
 
-        #
-        # for i in range(len(self.matcher.features)):
-        #     if self.matcher.table[i, self.matcher.matches[i]] != 0:
-        #
-        #         det1 = self.matcher.features[i].bbox
-        #         det2 = objects[self.matcher.matches[i]].bbox
-        #
-        #         print("Detections: ", det1, det2)
-        #
-        #         psx1, psx2, polytope_x = triangulate_convex_polytope(det2, det1, pose, axis=0)
-        #         psy1, psy2, polytope_y = triangulate_convex_polytope(det2, det1, pose, axis=1)
-        #
-        #         point1 = get_object_location_from_size(det1, 2.0)
-        #         point2 = get_object_location_from_size(det2, 2.0)
-        #
-        #         self.renderer.submit_pose(pose)
-        #
-        #         # self.renderer.submit_quad(np.array([0,0,0]), ps1[0][:3], 5.0, 1.0, [0.3, 0.4, 0.6])
-        #         # self.renderer.submit_quad(np.array([0,0,0]), ps1[1][:3], 5.0, 1.0, [0.6, 0.7, 0.3])
-        #         #
-        #         # self.renderer.submit_quad(ps2[0][:3], ps2[0][3:], 5.0, 1.0, [0.5, 0.8, 0.3])
-        #         # self.renderer.submit_quad(ps2[1][:3], ps2[1][3:], 5.0, 1.0, [0.3, 0.7, 0.5])
-        #
-        #         # self.renderer.submit_polytope(polytope)
-        #
-        #         polytope = polytope_x + polytope_y
-        #         polytope[:,2] /= 2
-        #
-        #         self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.3)
-        #         self.renderer.submit_sphere(point1/4, radius=0.3, color=[0.4, 0.8, 0.5])
-        #         self.renderer.submit_sphere(point2/4, radius=0.3, color=[0.4, 0.4, 0.8])
+        self.renderer.submit_points(clouds[3] * 2)
 
+
+    def triangulate_objects(self, objects, pose):
+        for i in range(len(self.matcher.features)):
+            if self.matcher.table[i, self.matcher.matches[i]] != 0:
+
+                det1 = self.matcher.features[i].bbox
+                det2 = objects[self.matcher.matches[i]].bbox
+
+                print("Detections: ", det1, det2)
+
+                psx1, psx2, polytope_x = triangulate_convex_polytope(det2, det1, pose, axis=0)
+                psy1, psy2, polytope_y = triangulate_convex_polytope(det2, det1, pose, axis=1)
+
+                point1 = get_object_location_from_size(det1, 2.0)
+                point2 = get_object_location_from_size(det2, 2.0)
+
+                self.renderer.submit_pose(pose)
+
+                # self.renderer.submit_quad(np.array([0,0,0]), ps1[0][:3], 5.0, 1.0, [0.3, 0.4, 0.6])
+                # self.renderer.submit_quad(np.array([0,0,0]), ps1[1][:3], 5.0, 1.0, [0.6, 0.7, 0.3])
+                #
+                # self.renderer.submit_quad(ps2[0][:3], ps2[0][3:], 5.0, 1.0, [0.5, 0.8, 0.3])
+                # self.renderer.submit_quad(ps2[1][:3], ps2[1][3:], 5.0, 1.0, [0.3, 0.7, 0.5])
+
+                # self.renderer.submit_polytope(polytope)
+
+                polytope = polytope_x + polytope_y
+                polytope[:,2] /= 2
+
+                self.renderer.submit_sphere(np.mean(polytope, axis = 0), radius=0.3)
+                self.renderer.submit_sphere(point1/4, radius=0.3, color=[0.4, 0.8, 0.5])
+                self.renderer.submit_sphere(point2/4, radius=0.3, color=[0.4, 0.4, 0.8])
 
 
 if __name__ == "__main__":
-    app = TrackingApp(render=False)
+    app = TrackingApp(render=True)
     app.init_experimental()
     app.run_no_data()

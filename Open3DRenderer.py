@@ -39,10 +39,10 @@ class Open3DRenderer:
         if colors is not None:
             self.pcd.colors = o3d.utility.Vector3dVector(colors)
         else:
-            clr =[0.1, 0.2, 0.2]
+            clr =[0.0, 0.0, 0.0]
             color_array = np.repeat(np.array([clr]), xyz.shape[0], axis=0)
-            color_array[:,1] = xyz[:,2] / 200
-            color_array[:, 1] = xyz[:, 2] / 200
+            color_array[:,1] = xyz[:,2] / 3
+            color_array[:, 2] = xyz[:, 2] / 4
             self.pcd.colors = o3d.utility.Vector3dVector(color_array)
 
         self.pcd.points = o3d.utility.Vector3dVector(xyz)
