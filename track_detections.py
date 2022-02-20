@@ -33,7 +33,7 @@ class TrackingApp:
         self.matcher = SemanticFeatureMatcher()
         self.matcher.initialize_tracks(self.objects)
 
-        self.renderer = Open3DRenderer(render)
+        self.renderer = Open3DRenderer(render, show_origin=False)
 
         self.pose = np.eye(4)
         self.delta_pose = get_rotation_y(0.4)
@@ -79,6 +79,13 @@ class TrackingApp:
             self.renderer.update()
             i+=1
 
+    def init_slam_experiment(self):
+        poses, landmarks, associations, measurements = self.slam.generate_sample_slam()
+
+        render_slam(poses, landmarks, associations, self.renderer)
+
+        self.slam.solve_positions(measurements, associations, poses.shape[0], landmarks.shape[0])
+
 
     def init_experimental(self):
 
@@ -107,11 +114,20 @@ class TrackingApp:
 
         depth = self.slam.compute_stereo_depth(leftImage, rightImage)
 
+        # plot_detection_boxes(depth, objects)
+
         # cloud = create_pointcloud_from_depth(depth)
 
         clouds = extract_object_points(depth, objects)
 
-        self.renderer.submit_points(clouds[3] * 2)
+        for cld in clouds:
+            self.renderer.submit_points(cld * 2)
+
+
+        for cld in clouds:
+            center = np.mean(cld, axis=0)
+            print(center)
+            # self.renderer.submit_sphere(center, radius=0.3)
 
 
     def triangulate_objects(self, objects, pose):
@@ -149,5 +165,5 @@ class TrackingApp:
 
 if __name__ == "__main__":
     app = TrackingApp(render=True)
-    app.init_experimental()
+    app.init_slam_experiment()
     app.run_no_data()

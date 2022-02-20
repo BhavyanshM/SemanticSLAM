@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from SemanticFeature import *
 
@@ -55,11 +56,11 @@ def compute_iou(bbox1, bbox2):
 
     return iou
 
-def display(img, name='Image', time=0):
+def display(img, name='Image', delay=0):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name, int(img.shape[1]*1.3), int(img.shape[0]*1.3))
     cv2.imshow(name, img)
-    code = cv2.waitKeyEx(time)
+    code = cv2.waitKeyEx(delay)
     if code == 32:
         code = cv2.waitKeyEx(0)
     if code == 113:
@@ -212,7 +213,8 @@ def extract_object_points(depth, objects):
         cls, x, y, w, h = obj.bbox
         condition_x = np.logical_and(cloud[0,:] > x - w/2, cloud[0, :] < x + w / 2)
         condition_y = np.logical_and(cloud[1, :] > y - h / 2, cloud[1, :] < y + h / 2)
-        condition = np.logical_and(condition_x, condition_y)
+        condition_z = np.logical_and(cloud[2, :] > 0.1, cloud[2, :] < 1000)
+        condition = np.logical_and(condition_x, condition_y, condition_z)
         points = cloud[:, condition]
 
         xs, ys, zs = points[0, :], points[1, :], points[2, :]
@@ -227,10 +229,37 @@ def extract_object_points(depth, objects):
     return clouds
 
 
+def render_slam(poses, landmarks, matches, renderer):
+    for pose in poses:
+        renderer.submit_sphere(pose, radius=0.1, color=[0.3, 0.8, 0.5])
+
+    for l in landmarks:
+        renderer.submit_sphere(l, radius=0.04, color=[0.8, 0.4, 0.9])
+
+    # for pose in poses:
+    #     for l in landmarks:
+
+    graph_points = np.vstack([poses, landmarks])
+    print(graph_points.shape)
+
+    line_indices = []
+    line_colors = []
+    for i in range(poses.shape[0] - 1):
+        line_indices.append([i, i + 1])
+        line_colors.append([0.2, 0.7, 0.4])
+
+    for m in matches:
+        i, j = m
+        line_indices.append([i, poses.shape[0] + j])
+        line_colors.append([0.1, 0.3, 0.4])
+
+    renderer.submit_lines(graph_points, np.array(line_indices), np.array(line_colors))
 
 
-
-
+def plot_sparse_matrix(A):
+    plt.figure(figsize=(10,10))
+    plt.spy(A)
+    plt.show()
 
 
 

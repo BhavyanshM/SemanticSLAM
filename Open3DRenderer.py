@@ -6,7 +6,7 @@ import open3d.visualization.rendering as rendering
 import copy
 
 class Open3DRenderer:
-    def __init__(self, render=True):
+    def __init__(self, render=True, show_origin=True):
 
         if render:
             self.vis = o3d.visualization.Visualizer()
@@ -17,11 +17,16 @@ class Open3DRenderer:
             self.rend_opt.background_color = np.asarray([0, 0, 0])
             self.rend_opt.light_on = True
             self.pcd = o3d.geometry.PointCloud()
-            self.axes = [o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0), size=0.4)]
+
+            if show_origin:
+                self.axes = [o3d.geometry.TriangleMesh.create_coordinate_frame(origin=(0, 0, 0), size=0.4)]
+                self.vis.add_geometry(self.axes[0])
+            else:
+                self.axes = []
+
             self.line_set = o3d.geometry.LineSet()
 
             self.vis.add_geometry(self.line_set)
-            self.vis.add_geometry(self.axes[0])
             self.vis.add_geometry(self.pcd)
 
             # gui.Application.instance.initialize()
@@ -33,7 +38,7 @@ class Open3DRenderer:
 
             self.control = self.vis.get_view_control()
 
-            # self.control.set_constant_z_far(50)
+            self.control.set_constant_z_far(10000)
 
     def submit_points(self, xyz, colors=None):
         if colors is not None:
