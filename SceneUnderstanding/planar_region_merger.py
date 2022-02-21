@@ -68,6 +68,9 @@ class PlanarRegionProcessor:
                 patch = list(map(float, f.readline().split(',')))
                 region.patches.append(np.array(patch))
 
+            region.patches = region.patches[0::3]
+            region.n_patches = len(region.patches)
+
             region.print()
 
             regions.append(region)
