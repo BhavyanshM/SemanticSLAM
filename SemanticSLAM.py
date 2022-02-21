@@ -135,7 +135,7 @@ class SemanticSLAM:
 
         plot_sparse_matrix(A)
 
-        print(x)
-
-
         print(measurements.shape)
+        print(x[0])
+
+        return x[0]

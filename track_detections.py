@@ -84,7 +84,15 @@ class TrackingApp:
 
         render_slam(poses, landmarks, associations, self.renderer)
 
-        self.slam.solve_positions(measurements, associations, poses.shape[0], landmarks.shape[0])
+        x = self.slam.solve_positions(measurements, associations, poses.shape[0], landmarks.shape[0])
+
+        x_poses, x_landmarks = x[:poses.shape[0]*3].reshape((poses.shape[0], 3)), x[poses.shape[0]*3:].reshape((landmarks.shape[0], 3))
+
+        x_poses -= x_poses[0]
+
+        print(x_landmarks, landmarks)
+
+        render_slam(x_poses, x_landmarks, associations, self.renderer)
 
 
     def init_experimental(self):
