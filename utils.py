@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
+import math
 from SemanticFeature import *
 
 def create_tracks(detections):
@@ -262,7 +262,15 @@ def plot_sparse_matrix(A):
     plt.show()
 
 
-
+def compute_winding_number(point, hull):
+    total_angle = 0
+    for i in range(len(hull) - 1):
+        v1, v2 = hull[i] - point, hull[i+1] - point
+        cosim = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+        cross = np.cross(v1, v2)
+        angle = math.acos(cosim) * cross[2] / math.fabs(cross[2])
+        total_angle += angle
+    return total_angle
 
 
 

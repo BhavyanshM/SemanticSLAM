@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import math
 from TransformUtils import *
+from utils import *
 
 class PlanarRegion:
     def __init__(self):
@@ -52,17 +53,7 @@ class PlanarRegion:
         for segment in self.segments:
             print("Segments:", segment, segment[1] - segment[0])
 
-    def compute_winding_number(self, point, hull):
-        print("Compute:", point, hull[0])
-        total_angle = 0
-        for i in range(len(hull) - 1):
-            v1, v2 = hull[i] - point, hull[i+1] - point
-            cosim = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-            cross = np.cross(v1, v2)
-            angle = math.acos(cosim) * cross / np.linalg.norm(cross)
-            total_angle += angle
-            print("Angle:", angle, cosim, np.cross(v1, v2))
-        return total_angle
+
 
     def reduce_segment_cosine(self, i):
         points = self.patches[self.segments[i][0]:self.segments[i][1]]
@@ -131,6 +122,23 @@ class PlanarRegionProcessor:
             regions.append(region)
         return regions
 
+    def merge_concave_hulls(self, hull1, hull2):
+        final_points = []
+        for i in range(len(hull1)):
+            point = hull1[i]
+            w_n = compute_winding_number(point, hull2)
+            print("Winding Number:", w_n)
+            if w_n < 0.5:
+                final_points.append(point)
+
+        for i in range(len(hull2)):
+            point = hull2[i]
+            w_n = compute_winding_number(point, hull1)
+            if w_n < 0.5:
+                final_points.append(point)
+
+        return final_points
+
     def plot_region(self, regions, i, format='ro', raw=False):
         region = regions[i]
         region.compute_ordered_segments()
@@ -156,31 +164,46 @@ class PlanarRegionProcessor:
 
         # plt.scatter(points[:, 0], points[:, 1], c=colors)
 
-        p = np.array([-2.1, -2.1])
-        plt.plot([p[0]], [p[1]], 'ro')
+        final = []
         if not(raw):
             for i, segment in enumerate(region.segments):
                 edges = region.reduce_segment_cosine(i)
                 if len(edges) > 10:
                     edges.append(edges[0])
-                    print("Edges:", len(edges))
                     edges = np.array(edges)
                     color = (i*342 % 255 / 255, i*123 % 255 / 255, i*322 % 255 / 255)
-                    plt.plot(edges[:,0], edges[:,1], format)
+                    # plt.plot(edges[:,0], edges[:,1], format)
 
-                    print("Winding Number:", p, region.compute_winding_number(p, edges[:, :2]))
+                    final.append(edges)
+
+                    # for u in range(-5, 5):
+                    #     for v in range(-5, 5):
+                    #         p = np.array([u*0.5, v*0.5])
+                    #         plt.plot([p[0]], [p[1]], 'ro')
+                    #         w_n = region.compute_winding_number(p, edges[:, :2])
+                    #         print("Winding Number:", p, )
+                    #         plt.text(p[0], p[1]+0.04, "{:.2f}".format(w_n), fontsize=12)
+
 
         if raw:
             points = np.array([region.patches])[0]
-            plt.plot(points[:,0], points[:,1], format)
+            # plt.plot(points[:,0], points[:,1], format)
+
+        return final
 
     def run(self):
 
         region_set1 = self.load_regions_from_file(15)
         region_set2 = self.load_regions_from_file(18)
 
-        self.plot_region(region_set1, 0, 'k-', raw=False)
-        # self.plot_region(region_set2, 0, 'b-')
+        segments1 = self.plot_region(region_set1, 0, 'k-', raw=False)
+        segments2 = self.plot_region(region_set2, 0, 'b-')
+
+        final = self.merge_concave_hulls(segments1[0], segments2[0])
+
+        points = np.array([final])[0]
+        plt.plot(points[:, 0], points[:, 1], 'r-')
+
         plt.show()
 
 
