@@ -53,7 +53,7 @@ class PlanarRegion:
         for segment in self.segments:
             print("Segments:", segment, segment[1] - segment[0])
 
-
+        return norms, self.segments
 
     def reduce_segment_cosine(self, i):
         points = self.patches[self.segments[i][0]:self.segments[i][1]]
@@ -86,8 +86,8 @@ class PlanarRegionProcessor:
         self.files = sorted(os.listdir(self.path))
 
         self.fig = plt.figure(figsize=(15, 15))
-        # plt.xlim(-3,3)
-        # plt.ylim(-3,3)
+        plt.xlim(-2.5,2.5)
+        plt.ylim(-2.5,2.5)
 
     def load_regions_from_file(self, i):
         regions = []
@@ -115,7 +115,7 @@ class PlanarRegionProcessor:
                 patch = list(map(float, f.readline().split(',')))
                 region.patches.append(np.array(patch))
 
-            # region.patches = region.patches[0::2]
+            # region.patches = region.patches[0::3]
 
             # region.print()
 
@@ -141,7 +141,7 @@ class PlanarRegionProcessor:
 
     def plot_region(self, regions, i, format='ro', raw=False):
         region = regions[i]
-        region.compute_ordered_segments()
+        norms, segments = region.compute_ordered_segments()
         region.transform_normal_z_up()
 
         points = np.array([region.patches])[0]
@@ -158,7 +158,9 @@ class PlanarRegionProcessor:
         colors[:, 1] = region.segment_indices * 123 % 255 / 255
         colors[:, 2] = region.segment_indices * 225 % 255 / 255
 
-        # plt.bar(indices, region.segment_indices)
+        # plt.bar(indices, norms)
+
+        # plt.bar(indices, region.segment_indices[:-1])
 
         # print("Shapes:", points[:,0].shape, colors[:,1].shape)
 
@@ -172,7 +174,7 @@ class PlanarRegionProcessor:
                     edges.append(edges[0])
                     edges = np.array(edges)
                     color = (i*342 % 255 / 255, i*123 % 255 / 255, i*322 % 255 / 255)
-                    # plt.plot(edges[:,0], edges[:,1], format)
+                    plt.plot(edges[:,0], edges[:,1], format)
 
                     final.append(edges)
 
@@ -180,29 +182,29 @@ class PlanarRegionProcessor:
                     #     for v in range(-5, 5):
                     #         p = np.array([u*0.5, v*0.5])
                     #         plt.plot([p[0]], [p[1]], 'ro')
-                    #         w_n = region.compute_winding_number(p, edges[:, :2])
+                    #         w_n = compute_winding_number(p, edges[:, :2])
                     #         print("Winding Number:", p, )
-                    #         plt.text(p[0], p[1]+0.04, "{:.2f}".format(w_n), fontsize=12)
+                    #         plt.text(p[0], p[1]+0.04, "{:.2f}".format(w_n), fontsize=15)
 
 
         if raw:
             points = np.array([region.patches])[0]
-            # plt.plot(points[:,0], points[:,1], format)
+            plt.plot(points[:,0], points[:,1], format, lw=3)
 
         return final
 
     def run(self):
 
-        region_set1 = self.load_regions_from_file(15)
-        region_set2 = self.load_regions_from_file(18)
+        region_set1 = self.load_regions_from_file(2)
+        region_set2 = self.load_regions_from_file(4)
 
-        segments1 = self.plot_region(region_set1, 0, 'k-', raw=False)
-        segments2 = self.plot_region(region_set2, 0, 'b-')
+        segments1 = self.plot_region(region_set1, 0, 'b-', raw=False)
+        # segments2 = self.plot_region(region_set2, 0, 'k-')
 
-        final = self.merge_concave_hulls(segments1[0], segments2[0])
-
-        points = np.array([final])[0]
-        plt.plot(points[:, 0], points[:, 1], 'r-')
+        # final = self.merge_concave_hulls(segments1[0], segments2[0])
+        #
+        # points = np.array([final])[0]
+        # plt.plot(points[:, 0], points[:, 1], 'r-')
 
         plt.show()
 
