@@ -268,7 +268,7 @@ def compute_winding_number(point, hull):
         v1, v2 = hull[i] - point, hull[i+1] - point
         cosim = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
         cross = np.cross(v1, v2)
-        angle = math.acos(cosim) * cross[2] / math.fabs(cross[2])
+        angle = math.acos(cosim) * cross / math.fabs(cross)
         total_angle += angle
     return total_angle
 
