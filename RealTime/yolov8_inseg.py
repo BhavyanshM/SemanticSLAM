@@ -1,6 +1,9 @@
 from ultralytics import YOLO
 from ultralytics.yolo.v8.detect.predict import DetectionPredictor
 import cv2
+import h5py
+import os
+import numpy as np
 
 def set_camera_props(cap):
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -20,26 +23,71 @@ def run_camera():
     cap.release()
     cv2.destroyAllWindows()
 
-if __name__ == "__main__":
+def display_image(tag, img, delay):
+    cv2.imshow(tag, img)
+    code = cv2.waitKeyEx(delay)
+    return code
 
+
+def camera_main():
     cap = cv2.VideoCapture(0)
     set_camera_props(cap)
 
-    model = YOLO("yolov8n-seg.pt")
-    
-
+    model = YOLO("./yolov8n-seg.pt")
 
     while True:
         ret, frame = cap.read()
 
-        model.predict(source=frame, show=True, conf=0.5)
+        result = model.predict(source=frame, show=True, conf=0.5)
+
+        print(result.boxes)
 
 
+        # code = display_image("Frame", frame, 1)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        code = cv2.waitKeyEx(1)
+        if code == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+def dataset_main():
+    home = os.path.expanduser('~')
+    path = home + '/.ihmc/logs/perception/'
+    filename = 'KITTI_Dataset_00.hdf5'
+    group = '/kitti/left/'
+    weights_file = "./yolov8n-seg.pt"
+
+    model = YOLO(weights_file)
+
+    data = h5py.File(path + filename, 'r')
+
+
+    for index in range(len(data[group].keys())):
+
+        print(data[group + str(index)])
+
+        buffer = data[group + str(index)][:].view('uint8')
+        buffer_image = np.asarray(buffer, dtype=np.uint8)
+        buffer_image = cv2.imdecode(buffer_image, cv2.IMREAD_GRAYSCALE)
+        buffer_image = cv2.cvtColor(buffer_image, cv2.COLOR_GRAY2RGB)
+
+        result = model.predict(source=buffer_image, show=True, conf=0.5)
+
+        # cv2.imshow("Frame", buffer_image)
+        code = cv2.waitKeyEx(30)
+
+        if code == 1048689:
+            data.close()
+            break
+    
+    data.close()
+
+
+if __name__ == "__main__":
+    dataset_main()
+
 
 
