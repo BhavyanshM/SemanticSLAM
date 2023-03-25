@@ -27,8 +27,11 @@ RUN apt-get --yes install \
     python3-opencv \
     sudo \
     iproute2 \
+    python3-pip \
     > /dev/null \
  && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --upgrade gluoncv
 
 # Setup a robotlab user as the development user, to avoid using root.
 RUN addgroup robotlab \
