@@ -1,46 +1,94 @@
-import torch
-from datasets import load_dataset
-from transformers import BertTokenizer, BertModel, pipeline
+from ultralytics import YOLO
+from ultralytics.yolo.v8.detect.predict import DetectionPredictor
+
+import cv2
+import h5py
+import os
+import numpy as np
+
+def set_camera_props(cap):
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FPS, 30)
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+    cap.set(cv2.CAP_PROP_FOCUS, 0)
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
+
+def run_camera(cap):
+    while True:
+        ret, frame = cap.read()
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+def display_image(tag, img, delay):
+    cv2.imshow(tag, img)
+    code = cv2.waitKeyEx(delay)
+    return code
+
+
+def camera_main():
+    cap = cv2.VideoCapture(0)
+    set_camera_props(cap)
+
+    model = YOLO("./yolov8n-seg.pt")
+
+    while True:
+        ret, frame = cap.read()
+
+        result = model.predict(source=frame, show=True, conf=0.5)
+
+        print(result.boxes)
+
+
+        # code = display_image("Frame", frame, 1)
+
+        code = cv2.waitKeyEx(1)
+        if code == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
 
 def dataset_main():
-    wikitext_dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    model = BertModel.from_pretrained("bert-base-uncased")
+    home = os.path.expanduser('~')
+    path = home + '/.ihmc/logs/perception/'
+    filename = 'KITTI_Dataset_00.hdf5'
+    group = '/kitti/left/'
+    weights_file = "./yolov8n-seg.pt"
 
-    unmasker = pipeline('fill-mask', model=model, tokenizer=tokenizer)
+    model = YOLO(weights_file)
 
-    # Get the 11th example from the training set (index 10)
-    input = wikitext_dataset["train"][10]
-    print(input['text'])
+    data = h5py.File(path + filename, 'r')
 
 
-    # Tokenize the input
-    encoded_input = tokenizer(input["text"], return_tensors="pt")
+    for index in range(len(data[group].keys())):
 
-    # Mask the 6th token (index 5)
-    masked_index = 5
-    encoded_input["input_ids"][0, masked_index] = tokenizer.mask_token_id
+        print(data[group + str(index)])
 
-    # Print the masked input
-    print(tokenizer.decode(encoded_input["input_ids"][0]))
+        buffer = data[group + str(index)][:].view('uint8')
+        buffer_image = np.asarray(buffer, dtype=np.uint8)
+        buffer_image = cv2.imdecode(buffer_image, cv2.IMREAD_GRAYSCALE)
+        buffer_image = cv2.cvtColor(buffer_image, cv2.COLOR_GRAY2RGB)
 
-    # Run the model to unmask the token
-    output = model(**encoded_input)
+        result = model.predict(source=buffer_image, show=True, conf=0.5)
 
-    # Get the logits for the masked token
-    print(output.last_hidden_state.shape, output.pooler_output.shape)
+        # cv2.imshow("Frame", buffer_image)
+        code = cv2.waitKeyEx(30)
 
-    predictions = output.last_hidden_state
+        if code == 1048689:
+            data.close()
+            break
+    
+    data.close()
 
-    print(predictions[0, masked_index].shape)
 
-    probs = torch.nn.functional.softmax(predictions[0, masked_index], dim=-1)
+if __name__ == "__main__":
+    dataset_main()
 
-    top_k_weights, top_k_indices = torch.topk(probs, 5, sorted=True)
-
-    for i, pred_idx in enumerate(top_k_indices):
-        predicted_token = tokenizer.convert_ids_to_tokens([pred_idx])[0]
-        token_weight = top_k_weights[i]
-        print("[MASK]: '%s'"%predicted_token, " | weights:", float(token_weight))
 
 
