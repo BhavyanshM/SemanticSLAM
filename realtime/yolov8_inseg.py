@@ -30,8 +30,8 @@ def display_image(tag, img, delay):
 
 
 def camera_main():
-    cap = cv2.VideoCapture(0)
-    set_camera_props(cap)
+    cap = cv2.VideoCapture(2)
+    # set_camera_props(cap)
 
     model = YOLO("./yolov8n-seg.pt")
 
@@ -39,8 +39,6 @@ def camera_main():
         ret, frame = cap.read()
 
         result = model.predict(source=frame, show=True, conf=0.5)
-
-        print(result.boxes)
 
 
         # code = display_image("Frame", frame, 1)
@@ -87,7 +85,7 @@ def dataset_main():
 
 
 if __name__ == "__main__":
-    dataset_main()
-
+    # dataset_main()
+    camera_main()
 
 

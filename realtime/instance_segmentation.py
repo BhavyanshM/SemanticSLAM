@@ -11,7 +11,7 @@ def set_camera_props(cap):
     cap.set(cv2.CAP_PROP_FOCUS, 0)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
 
-def run_camera():
+def run_camera(cap):
     while True:
         ret, frame = cap.read()
         cv2.imshow('frame', frame)
@@ -21,15 +21,21 @@ def run_camera():
     cap.release()
     cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-
-    cap = cv2.VideoCapture(0)
-    set_camera_props(cap)
-
+def run_segmentation(cap):
     segment_video = instanceSegmentation()
     segment_video.load_model("./pointrend_resnet50.pkl", confidence=0.7, detection_speed="fast")
     segment_video.process_camera(cap, show_bboxes=True, frames_per_second=30, check_fps=True, show_frames=True, frame_name="Frame")
 
+
+if __name__ == "__main__":
+
+    cap = cv2.VideoCapture(2)
+    set_camera_props(cap)
+
+
+    # run_camera(cap)
+    run_segmentation(cap)    
+    
 
 
 
