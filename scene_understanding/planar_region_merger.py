@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import math
 from TransformUtils import *
-from utils import *
+from slam.utils import *
 
 class PlanarRegion:
     def __init__(self):

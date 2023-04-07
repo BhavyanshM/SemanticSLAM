@@ -1,5 +1,5 @@
 import numpy as np
-from utils import *
+from slam.utils import *
 
 
 class SemanticFeatureMatcher:

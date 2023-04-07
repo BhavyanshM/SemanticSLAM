@@ -2,13 +2,13 @@ import numpy as np
 import cv2
 import scipy.sparse.linalg
 from scipy import sparse
-from utils import *
+from slam.utils import *
 import sys
 
 np.set_printoptions(threshold=sys.maxsize)
 
 
-class SemanticSLAM:
+class FrustrumSLAM:
     def __init__(self):
         self.win_size = 5
         self.min_disp = -1

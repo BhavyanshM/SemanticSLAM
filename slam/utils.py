@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-from SemanticFeature import *
+from semantic_feature import *
 
 def create_tracks(detections):
     objects = []

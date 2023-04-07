@@ -1,94 +1,64 @@
-from ultralytics import YOLO
-from ultralytics.yolo.v8.detect.predict import DetectionPredictor
+from detector import *
+from renderer import *
 
-import cv2
-import h5py
-import os
-import numpy as np
+class SemanticSLAMApp:
 
-def set_camera_props(cap):
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    cap.set(cv2.CAP_PROP_FPS, 30)
-    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-    cap.set(cv2.CAP_PROP_FOCUS, 0)
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
+    def __init__(self):
+        self.renderer = Renderer(render=True, show_origin=True)
 
-def run_camera(cap):
-    while True:
-        ret, frame = cap.read()
-        cv2.imshow('frame', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    def display_image(self, tag, img, delay):
+        cv2.imshow(tag, img)
+        code = cv2.waitKeyEx(delay)
+        return code
 
-    cap.release()
-    cv2.destroyAllWindows()
+    def dataset_main(self):
+        home = os.path.expanduser('~')
+        path = home + '/.ihmc/logs/perception/'
+        filename = 'KITTI_Dataset_00.hdf5'
+        group = '/kitti/left/'
+        weights_file = "./yolov8n-seg.pt"
 
-def display_image(tag, img, delay):
-    cv2.imshow(tag, img)
-    code = cv2.waitKeyEx(delay)
-    return code
+        detector = Detector(weights_file)
+
+        data = h5py.File(path + filename, 'r')
 
 
-def camera_main():
-    cap = cv2.VideoCapture(0)
-    set_camera_props(cap)
+        pose = np.eye(4)
 
-    model = YOLO("./yolov8n-seg.pt")
+        for index in range(len(data[group].keys())):
 
-    while True:
-        ret, frame = cap.read()
+            pose[:,:3] += np.array([0.01, 0, 0])
 
-        result = model.predict(source=frame, show=True, conf=0.5)
+            self.renderer.submit_pose(pose)
 
-        print(result.boxes)
+            self.renderer.update()
 
+            print(data[group + str(index)])
 
-        # code = display_image("Frame", frame, 1)
+            buffer = data[group + str(index)][:].view('uint8')
+            buffer_image = np.asarray(buffer, dtype=np.uint8)
+            buffer_image = cv2.imdecode(buffer_image, cv2.IMREAD_GRAYSCALE)
+            buffer_image = cv2.cvtColor(buffer_image, cv2.COLOR_GRAY2RGB)
 
-        code = cv2.waitKeyEx(1)
-        if code == ord('q'):
-            break
+            result = detector.detect(buffer_image)[0]
 
-    cap.release()
-    cv2.destroyAllWindows()
+            image = result.plot()
 
+            cv2.imshow("Frame", image)
+            code = cv2.waitKeyEx(30)
 
-def dataset_main():
-    home = os.path.expanduser('~')
-    path = home + '/.ihmc/logs/perception/'
-    filename = 'KITTI_Dataset_00.hdf5'
-    group = '/kitti/left/'
-    weights_file = "./yolov8n-seg.pt"
+            print(code)
 
-    model = YOLO(weights_file)
-
-    data = h5py.File(path + filename, 'r')
-
-
-    for index in range(len(data[group].keys())):
-
-        print(data[group + str(index)])
-
-        buffer = data[group + str(index)][:].view('uint8')
-        buffer_image = np.asarray(buffer, dtype=np.uint8)
-        buffer_image = cv2.imdecode(buffer_image, cv2.IMREAD_GRAYSCALE)
-        buffer_image = cv2.cvtColor(buffer_image, cv2.COLOR_GRAY2RGB)
-
-        result = model.predict(source=buffer_image, show=True, conf=0.5)
-
-        # cv2.imshow("Frame", buffer_image)
-        code = cv2.waitKeyEx(30)
-
-        if code == 1048689:
-            data.close()
-            break
-    
-    data.close()
+            if code == 1048689 or code == 113:
+                data.close()
+                break
+        
+        data.close()
 
 
 if __name__ == "__main__":
-    dataset_main()
+    app = SemanticSLAMApp()
+    app.dataset_main()
 
 
 

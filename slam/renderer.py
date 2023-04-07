@@ -1,11 +1,11 @@
 import open3d as o3d
 import numpy as np
-from slam.utils import *
+from utils import *
 import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
 import copy
 
-class Open3DRenderer:
+class Renderer:
     def __init__(self, render=True, show_origin=True):
 
         if render:
