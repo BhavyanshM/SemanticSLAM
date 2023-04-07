@@ -30,18 +30,27 @@ def display_image(tag, img, delay):
 
 
 def camera_main():
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(0)
     # set_camera_props(cap)
 
     model = YOLO("./yolov8n-seg.pt")
 
+    scale = 2.0
+
     while True:
         ret, frame = cap.read()
 
-        result = model.predict(source=frame, show=True, conf=0.5)
+
+        result = model.predict(source=frame, show=False, conf=0.5)
+
+        result_frame = result[0].plot()
 
 
-        # code = display_image("Frame", frame, 1)
+    
+
+        cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("Frame", int(result_frame.shape[1] * scale), int(result_frame.shape[0] * scale))
+        code = display_image("Frame", result_frame, 1)
 
         code = cv2.waitKeyEx(1)
         if code == ord('q'):
