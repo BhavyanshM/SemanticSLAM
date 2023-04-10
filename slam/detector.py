@@ -11,7 +11,6 @@ class Detector:
         self.model = YOLO(weights_file)
 
     def detect(self, frame):
-        result = self.model.predict(source=frame, show=False, conf=0.5)
-        return result
+        return self.model.predict(source=frame, show=False, conf=0.5)[0]
 
     
