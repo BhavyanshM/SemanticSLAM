@@ -63,11 +63,13 @@ def camera_main():
 def dataset_main():
     home = os.path.expanduser('~')
     path = home + '/.ihmc/logs/perception/'
+    weights_path = home + '/.ihmc/weights/'
     filename = 'KITTI_Dataset_00.hdf5'
     group = '/kitti/left/'
-    weights_file = "./yolov8n-seg.pt"
+    # weights_file = "./yolov8n-seg.pt"
+    weights_file = "facade_yolov8n_100.pt"
 
-    model = YOLO(weights_file)
+    model = YOLO(weights_path + weights_file)
 
     data = h5py.File(path + filename, 'r')
 
@@ -94,7 +96,7 @@ def dataset_main():
 
 
 if __name__ == "__main__":
-    # dataset_main()
-    camera_main()
+    dataset_main()
+    # camera_main()
 
 
