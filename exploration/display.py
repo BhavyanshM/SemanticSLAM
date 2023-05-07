@@ -27,11 +27,15 @@ def plot_world(fig, grid, obstacles, agent):
 # Use OpenCV cv2 to plot the same grid
 def plot_world_cv(grid, obstacles, agent, scale):
     
-    obstacle_size = 5
-
-    # Set an area of 20 x 20 pixels around each obstacle as 100
     for obstacle in obstacles:
-        grid[obstacle[0] - obstacle_size:obstacle[0] + obstacle_size, obstacle[1] - obstacle_size:obstacle[1] + obstacle_size] = 100
+
+        obstacle_size = obstacle[2]
+        obstacle_min_x = obstacle[0] - obstacle_size
+        obstacle_max_x = obstacle[0] + obstacle_size
+        obstacle_min_y = obstacle[1] - obstacle_size
+        obstacle_max_y = obstacle[1] + obstacle_size
+
+        grid[ obstacle_min_x:obstacle_max_x, obstacle_min_y:obstacle_max_y] = 100
 
     # Set the agent's position as 50
     grid[int(agent.prev[0]), int(agent.prev[1])] = 0
@@ -47,38 +51,3 @@ def plot_world_cv(grid, obstacles, agent, scale):
     code = cv2.waitKeyEx(30)
 
     return code
-
-
-# Create an even loop that runs for 1000 iterations and plots the grid
-def run_simulation(grid, obstacles, agent : Agent, height, width):
-    
-    scale = 1400
-
-    # Define the physical size of the plot
-    fig, ax = plt.subplots(figsize=(12, 8))
-
-    running = True
-    i = 0
-    while running:
-        # ax.clear()
-
-        code = plot_world_cv(grid, obstacles, agent, scale)
-
-        agent.random_update(i, height)
-
-        print(agent.pos)
-
-        # plt.pause(1 / 100)
-
-        i += 1
-
-
-        # print(code) 1048689
-        if code != -1:
-            running = False
-
-        # # Check for user input
-        # if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
-        #     input_char = sys.stdin.read(1)
-        #     if input_char == 'q':
-        #         running = False
