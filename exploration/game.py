@@ -26,7 +26,7 @@ def run_simulation(mcp : MonteCarloPlanner, world, agent : Agent):
     while running:
         # ax.clear()
 
-        code = plot_world_cv(world.grid, world.obstacles, agent, scale)
+        code = plot_world_cv(world, agent, scale)
 
 
         mcp.plan()
@@ -57,8 +57,6 @@ if __name__ == "__main__":
 
     world_height_in_meters = 4.0
     world_width_in_meters = 6.0
-
-    
 
     obstacles = [(10, 20, 5), (45, 61, 8), (70, 82, 10), (90, 43, 3), (20, 34, 6)]
 

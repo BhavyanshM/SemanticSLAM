@@ -25,9 +25,9 @@ def plot_world(fig, grid, obstacles, agent):
                             cmap = cmap,norm=norm)
     
 # Use OpenCV cv2 to plot the same grid
-def plot_world_cv(grid, obstacles, agent, scale):
+def plot_world_cv(world, agent, scale):
     
-    for obstacle in obstacles:
+    for obstacle in world.obstacles:
 
         obstacle_size = obstacle[2]
         obstacle_min_x = obstacle[0] - obstacle_size
@@ -35,18 +35,18 @@ def plot_world_cv(grid, obstacles, agent, scale):
         obstacle_min_y = obstacle[1] - obstacle_size
         obstacle_max_y = obstacle[1] + obstacle_size
 
-        grid[ obstacle_min_x:obstacle_max_x, obstacle_min_y:obstacle_max_y] = 100
+        world.grid[ obstacle_min_x:obstacle_max_x, obstacle_min_y:obstacle_max_y] = 100
 
     # Set the agent's position as 50
-    grid[int(agent.prev[0]), int(agent.prev[1])] = 0
-    grid[int(agent.pos[0]), int(agent.pos[1])] = 50
+    world.grid[int(agent.prev[0]), int(agent.prev[1])] = 0
+    world.grid[int(agent.pos[0]), int(agent.pos[1])] = 50
 
     # Plot the grid
 
     # Convert the floating point grid to 8-bit grayscale then convert it to RGB image
-    grid = cv2.cvtColor(np.uint8(grid), cv2.COLOR_GRAY2RGB)
+    grid_color = cv2.cvtColor(np.uint8(world.grid), cv2.COLOR_GRAY2RGB)
 
-    cv2.imshow('Grid', grid)
+    cv2.imshow('Grid', grid_color)
     cv2.resizeWindow('Grid', scale, scale)
     code = cv2.waitKeyEx(30)
 

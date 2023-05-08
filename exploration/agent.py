@@ -25,35 +25,3 @@ class Agent:
         self.pos += action
 
         return self.pos
-
-
-    def check_action_obstacles(self, action, obstacles):
-
-        position = self.pos + action
-
-        collision = False
-        for obstacle in obstacles:
-
-            obstacle_size = obstacle[2]
-            obstacle_min_x = obstacle[0] - obstacle_size
-            obstacle_max_x = obstacle[0] + obstacle_size
-            obstacle_min_y = obstacle[1] - obstacle_size
-            obstacle_max_y = obstacle[1] + obstacle_size
-
-            if position[0] > obstacle_min_x and position[0] < obstacle_max_x:
-                if position[1] > obstacle_min_y and position[1] < obstacle_max_y:
-                    collision = True
-                    break
-
-        return not(collision)
-                
-    def check_action_boundaries(self, action, grid_size):
-
-        position = self.pos + action
-
-        if position[0] < 0 or position[0] > grid_size:
-            return False
-        if position[1] < 0 or position[1] > grid_size:
-            return False
-
-        return True
