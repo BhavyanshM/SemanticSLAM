@@ -25,3 +25,7 @@ class Agent:
         self.pos += action
 
         return self.pos
+    
+    def update_state(self, new_state):
+        self.prev = np.array([self.pos[0], self.pos[1]])
+        self.pos = np.array([new_state[0], new_state[1]])

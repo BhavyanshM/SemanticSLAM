@@ -14,7 +14,7 @@ from monte_carlo_planner import *
 from world import *
 
 # Create an even loop that runs for 1000 iterations and plots the grid
-def run_simulation(mcp : MonteCarloPlanner, world, agent : Agent):
+def run_simulation(mcp : MonteCarloPlanner, world, agent : Agent, iterations):
     
     scale = 1400
 
@@ -28,25 +28,17 @@ def run_simulation(mcp : MonteCarloPlanner, world, agent : Agent):
 
         code = plot_world_cv(world, agent, scale)
 
+        new_state, action_values = mcp.plan(iterations)
 
-        mcp.plan()
+        print("New State: {}, Action Values: {}".format(new_state, action_values))
 
-        print(agent.pos)
-
-        # plt.pause(1 / 100)
+        agent.update_state(new_state)
 
         i += 1
-
 
         # print(code) 1048689
         if code != -1:
             running = False
-
-        # # Check for user input
-        # if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
-        #     input_char = sys.stdin.read(1)
-        #     if input_char == 'q':
-        #         running = False
 
 if __name__ == "__main__":
     plotting_style = 'mplot'  # 'mplot' or 'sns'
@@ -54,6 +46,8 @@ if __name__ == "__main__":
     scale = 2
     world_height = 100
     world_width = 100
+
+    simulation_iterations = 100
 
     world_height_in_meters = 4.0
     world_width_in_meters = 6.0
@@ -66,8 +60,11 @@ if __name__ == "__main__":
 
     cv2.namedWindow('Grid', cv2.WINDOW_NORMAL)
 
+    goal = np.array([world_width - 1, world_height - 1])
+    goal_margin = 10
+
     agent = Agent(0, 0, 0)
-    world = World(obstacles, world_height, world_width)
+    world = World(obstacles, goal, goal_margin, world_height, world_width)
     planner = MonteCarloPlanner(world, agent)
 
-    run_simulation(planner, world, agent)
+    run_simulation(planner, world, agent, simulation_iterations)

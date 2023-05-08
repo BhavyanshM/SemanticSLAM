@@ -18,12 +18,12 @@ class MonteCarloPlanner:
         self.agent = agent
         self.root = Node(agent.pos, None)
 
-    def plan(self):
+    def plan(self, iterations=100):
 
-        print("Planning...")
+        # print("Planning...")
 
         # perform 100 iterations of MCTS
-        for i in range(100):
+        for i in range(iterations):
             self.mcts_iteration(self.root, 0)
 
         # get best child of root node
@@ -34,14 +34,14 @@ class MonteCarloPlanner:
         self.root = best_node
 
         # return best child's state
-        return best_node.state
+        return best_node.state, ucb_values
 
     def mcts_iteration(self, node, depth):
 
-        if node.parent is not None:
-            print("Iteration: ", depth, node.parent.state, node.state, node.visits, node.value, node.children)
-        else:
-            print("Root Iteration: ", depth, node.state, node.visits, node.value, node.children)
+        # if node.parent is not None:
+        #     print("Iteration: ", depth, node.parent.state, node.state, node.visits, node.value, len(node.children))
+        # else:
+        #     print("Root Iteration: ", depth, node.state, node.visits, node.value, len(node.children))
         
         # check if node is a leaf node
         if node.visits == 0:
@@ -52,23 +52,24 @@ class MonteCarloPlanner:
             # perform random simulation from child node to get score
             score = self.simulate(child_node)
 
-            print("Computed Simulation Score: ", score)
+            # print("Computed Simulation Score: ", score)
 
             # adjust value for ancestor nodes upto the root
-            self.backpropagate(child_node, score)
+            child_node.value = score
+            self.backpropagate(node, score)
             
         # if node is not a leaf node
         else:
 
-            print("Non-leaf Node: ", node.state, node.visits, node.value, node.children)
+            # print("Non-leaf Node: ", node.state, node.visits, node.value, len(node.children))
 
             # compute UCB value for each child
             child_states = [(child.state, child.visits, child.value) for child in node.children]
-            print("\tChild States: ", child_states)
+            # print("\tChild States: ", child_states)
 
             ucb_values = [self.compute_ucb_value(child) for child in node.children]
 
-            print("UCB Values: ", ucb_values)
+            # print("UCB Values: ", ucb_values)
 
             # select child with highest UCB value
             index = ucb_values.index(max(ucb_values))
@@ -140,22 +141,22 @@ class MonteCarloPlanner:
             score -= 1
 
             if not(self.check_action_obstacles(random_state, random_action, self.world.obstacles)):
-                score -= 50
+                score -= 5000
                 break
 
             elif not(self.check_action_boundaries(random_state, random_action, self.world.grid_height)):
-                score -= 50
+                score -= 5000
                 break
 
-            elif np.linalg.norm(random_state - self.world.goal) < 30:
-                score += 1000
+            elif np.linalg.norm(random_state - self.world.goal) < self.world.goal_margin:
+                score += 10000
                 break
 
         return score
     
     def backpropagate(self, node, score):
 
-        print("Backpropagating: ", node.state, score)
+        # print("Backpropagating: ", node.state, score)
 
         # adjust value for ancestor nodes upto the root
         node.visits += 1

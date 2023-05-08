@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from plot_utils import *
 from agent import *
+from world import *
 
 # Plot the grid with the point and the obstacles
 def plot_world(fig, grid, obstacles, agent):
@@ -25,7 +26,7 @@ def plot_world(fig, grid, obstacles, agent):
                             cmap = cmap,norm=norm)
     
 # Use OpenCV cv2 to plot the same grid
-def plot_world_cv(world, agent, scale):
+def plot_world_cv(world : World, agent : Agent, scale):
     
     for obstacle in world.obstacles:
 
@@ -36,6 +37,14 @@ def plot_world_cv(world, agent, scale):
         obstacle_max_y = obstacle[1] + obstacle_size
 
         world.grid[ obstacle_min_x:obstacle_max_x, obstacle_min_y:obstacle_max_y] = 100
+
+    # Display a yellow square on goal of total width goal_margin
+    goal_margin = world.goal_margin
+    goal_min_x = world.goal[0] - goal_margin
+    goal_max_x = world.goal[0] + goal_margin
+    goal_min_y = world.goal[1] - goal_margin
+    goal_max_y = world.goal[1] + goal_margin
+    world.grid[goal_min_x:goal_max_x, goal_min_y:goal_max_y] = 200
 
     # Set the agent's position as 50
     world.grid[int(agent.prev[0]), int(agent.prev[1])] = 0
@@ -48,6 +57,6 @@ def plot_world_cv(world, agent, scale):
 
     cv2.imshow('Grid', grid_color)
     cv2.resizeWindow('Grid', scale, scale)
-    code = cv2.waitKeyEx(30)
+    code = cv2.waitKeyEx(1)
 
     return code
