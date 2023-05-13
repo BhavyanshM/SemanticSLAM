@@ -134,23 +134,28 @@ class MonteCarloPlanner:
 
         random_state = node.state
 
-        for i in range(100):
+        range_scanner = self.agent.range_scanner
+        
+
+        for i in range(10):
             available_actions = self.get_next_available_actions(node)
             random_action = random.choice(available_actions)
             random_state = self.compute_action_result(random_state, random_action)
             score -= 1
 
-            if not(self.check_action_obstacles(random_state, random_action, self.world.obstacles)):
-                score -= 5000
-                break
+            scan_points = range_scanner.scan(random_state, self.world.obstacles)
 
-            elif not(self.check_action_boundaries(random_state, random_action, self.world.grid_height)):
-                score -= 5000
-                break
+            for point in scan_points:
+                
+                # if point is closer than max_range, deduct score
+                if np.linalg.norm(point - random_state) < range_scanner.max_range:
+                    score -= 100
+                else:
+                    score += 1000
 
-            elif np.linalg.norm(random_state - self.world.goal) < self.world.goal_margin:
-                score += 10000
-                break
+                if np.linalg.norm(point - self.world.goal) < self.world.goal_margin:
+                    score += 10000
+                    
 
         return score
     

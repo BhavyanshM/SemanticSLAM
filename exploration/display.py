@@ -46,14 +46,19 @@ def plot_world_cv(world : World, agent : Agent, scale):
     goal_max_y = world.goal[1] + goal_margin
     world.grid[goal_min_x:goal_max_x, goal_min_y:goal_max_y] = 200
 
-    # Set the agent's position as 50
-    world.grid[int(agent.prev[0]), int(agent.prev[1])] = 0
-    world.grid[int(agent.pos[0]), int(agent.pos[1])] = 50
-
-    # Plot the grid
-
     # Convert the floating point grid to 8-bit grayscale then convert it to RGB image
     grid_color = cv2.cvtColor(np.uint8(world.grid), cv2.COLOR_GRAY2RGB)
+    
+    # Set the agent's position as 50
+    grid_color[int(agent.prev[0]), int(agent.prev[1])] = np.array([0, 0, 0])
+    grid_color[int(agent.pos[0]), int(agent.pos[1])] = np.array([0, 255, 255])
+
+    # Plot lidar scan points as filled red cells
+    for point in agent.scan_points:
+        if int(point[0]) < grid_color.shape[0] and int(point[1]) < grid_color.shape[1] and int(point[0]) >= 0 and int(point[1]) >= 0:
+            grid_color[int(point[0]), int(point[1])] = [0, 0, 255]
+         
+
 
     cv2.imshow('Grid', grid_color)
     cv2.resizeWindow('Grid', scale, scale)
