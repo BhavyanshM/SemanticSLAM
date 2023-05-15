@@ -156,7 +156,7 @@ class MonteCarloPlanner:
 
         # if agent is at an obstacle, deduct score
         if self.world.grid[int(random_state[0]) % self.world.grid_height][int(random_state[1])  % self.world.grid_width] == 100:
-            score -= 1000
+            score -= 400
 
         scan_points = range_scanner.scan(random_state, self.world.obstacles)
 
@@ -172,7 +172,7 @@ class MonteCarloPlanner:
 
                 # if point is in unknown space, add score
                 if self.world.grid[int(point[0])][int(point[1])] == 0:
-                    score += 200
+                    score += 500
 
                 
 
