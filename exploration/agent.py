@@ -3,11 +3,12 @@ import numpy as np
 from sensor import RangeScanner
 
 class Agent:
-    def __init__(self, x, y, theta):
+    def __init__(self, x, y, theta, max_range):
+        self.max_range = max_range
         self.pos = np.array([x, y])
         self.prev = np.zeros_like(self.pos)
         self.theta = theta
-        self.range_scanner = RangeScanner(max_range=20, num_points=24)
+        self.range_scanner = RangeScanner(max_range=max_range, num_points=24)
         self.scan_points = []
 
     def random_update(self, grid_size):

@@ -1,6 +1,7 @@
 import random
 
 from agent import *
+from world import *
 
 class Node:
     def __init__(self, state, parent) -> None:
@@ -13,17 +14,19 @@ class Node:
 
 class MonteCarloPlanner:
 
-    def __init__(self, world, agent : Agent) -> None:
+    def __init__(self, world : World, agent : Agent, mcts_iterations=100, simulation_count=50) -> None:
         self.world = world
         self.agent = agent
+        self.mcts_iterations = mcts_iterations
+        self.simulation_count = simulation_count
         self.root = Node(agent.pos, None)
 
-    def plan(self, iterations=100):
+    def plan(self):
 
         # print("Planning...")
 
         # perform 100 iterations of MCTS
-        for i in range(iterations):
+        for i in range(self.mcts_iterations):
             self.mcts_iteration(self.root, 0)
 
         # get best child of root node
@@ -137,25 +140,41 @@ class MonteCarloPlanner:
         range_scanner = self.agent.range_scanner
         
 
-        for i in range(10):
+        for i in range(self.simulation_count):
             available_actions = self.get_next_available_actions(node)
             random_action = random.choice(available_actions)
             random_state = self.compute_action_result(random_state, random_action)
             score -= 1
 
-            scan_points = range_scanner.scan(random_state, self.world.obstacles)
+        # if agents goes out of bounds, deduct score
+        if random_state[0] < 0 or random_state[0] >= self.world.grid_width or random_state[1] < 0 or random_state[1] >= self.world.grid_height:
+            score -= 1000
 
-            for point in scan_points:
-                
+        # if agent is at the goal, add score
+        if np.linalg.norm(random_state - self.world.goal) < self.world.goal_margin:
+            score += 200000
+
+        # if agent is at an obstacle, deduct score
+        if self.world.grid[int(random_state[0]) % self.world.grid_height][int(random_state[1])  % self.world.grid_width] == 100:
+            score -= 1000
+
+        scan_points = range_scanner.scan(random_state, self.world.obstacles)
+
+        for point in scan_points:
+            
+            if point[0] >= 0 and point[0] < self.world.grid_width and point[1] >= 0 and point[1] < self.world.grid_height:
+
                 # if point is closer than max_range, deduct score
                 if np.linalg.norm(point - random_state) < range_scanner.max_range:
-                    score -= 100
+                    score -= 10
                 else:
-                    score += 1000
+                    score += 10
 
-                if np.linalg.norm(point - self.world.goal) < self.world.goal_margin:
-                    score += 10000
-                    
+                # if point is in unknown space, add score
+                if self.world.grid[int(point[0])][int(point[1])] == 0:
+                    score += 200
+
+                
 
         return score
     
@@ -194,9 +213,9 @@ class MonteCarloPlanner:
 
         position = state + action
 
-        if position[0] < 0 or position[0] > grid_size:
+        if position[0] < 0 or position[0] >= grid_size - 1:
             return False
-        if position[1] < 0 or position[1] > grid_size:
+        if position[1] < 0 or position[1] >= grid_size - 1:
             return False
 
         return True

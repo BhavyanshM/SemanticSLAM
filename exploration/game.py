@@ -31,11 +31,13 @@ def run_simulation(mcp : MonteCarloPlanner, world : World, agent : Agent, iterat
 
         # print(agent.scan_points)
 
-        new_state, action_values = mcp.plan(iterations)
+        new_state, action_values = mcp.plan()
 
         print("New State: {}, Action Values: {}".format(new_state, action_values))
 
         agent.update_state(new_state)
+
+        world.update_grid(new_state, agent.max_range)
 
         i += 1
 
@@ -51,6 +53,9 @@ if __name__ == "__main__":
     world_width = 100
 
     iterations = 10
+    simulation_count = 10
+
+    max_range = 20
 
     world_height_in_meters = 4.0
     world_width_in_meters = 6.0
@@ -63,11 +68,11 @@ if __name__ == "__main__":
 
     cv2.namedWindow('Grid', cv2.WINDOW_NORMAL)
 
-    goal = np.array([world_width - 1, world_height - 1])
-    goal_margin = 10
+    goal = np.array([10, world_height - 10])
+    goal_margin = 5
 
-    agent = Agent(0, 0, 0)
+    agent = Agent(0, 0, 0, 20)
     world = World(obstacles, goal, goal_margin, world_height, world_width)
-    planner = MonteCarloPlanner(world, agent)
+    planner = MonteCarloPlanner(world, agent, iterations, simulation_count)
 
     run_simulation(planner, world, agent, iterations)
