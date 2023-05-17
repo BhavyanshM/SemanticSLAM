@@ -35,13 +35,14 @@ class RangeScanner:
 
         for obstacle in obstacles:
             obstacle_center = obstacle[0:2]
-            obstacle_size = obstacle[2]
+            obstacle_size_x = obstacle[2]
+            obstacle_size_y = obstacle[3]
 
             # Get all four corners of the obstacle
-            obstacle_min_x = obstacle_center[0] - obstacle_size
-            obstacle_max_x = obstacle_center[0] + obstacle_size
-            obstacle_min_y = obstacle_center[1] - obstacle_size
-            obstacle_max_y = obstacle_center[1] + obstacle_size
+            obstacle_min_x = obstacle_center[0] - obstacle_size_x
+            obstacle_max_x = obstacle_center[0] + obstacle_size_x
+            obstacle_min_y = obstacle_center[1] - obstacle_size_y
+            obstacle_max_y = obstacle_center[1] + obstacle_size_y
 
             # build polygon of obstacle with vertices
             polygon = np.array([[obstacle_min_x, obstacle_min_y], [obstacle_min_x, obstacle_max_y],
@@ -147,8 +148,8 @@ class RangeScanner:
         
         obstacle_min_x = obstacle[0] - obstacle[2]
         obstacle_max_x = obstacle[0] + obstacle[2]
-        obstacle_min_y = obstacle[1] - obstacle[2]
-        obstacle_max_y = obstacle[1] + obstacle[2]
+        obstacle_min_y = obstacle[1] - obstacle[3]
+        obstacle_max_y = obstacle[1] + obstacle[3]
 
         if point[0] < obstacle_min_x or point[0] > obstacle_max_x or point[1] < obstacle_min_y or point[1] > obstacle_max_y:
             return False
@@ -174,7 +175,7 @@ if __name__ == "__main__":
 
     # draw the obstacles
     for obstacle in obstacles:
-        cv2.rectangle(img, (int(obstacle[0] - obstacle[2]), int(obstacle[1] - obstacle[2])),
+        cv2.rectangle(img, (int(obstacle[0] - obstacle[2]), int(obstacle[1] - obstacle[3])),
                       (int(obstacle[0] + obstacle[2]), int(obstacle[1] + obstacle[2])), (255, 255, 255), -1)
         
     # set the pixels in img at point to white

@@ -10,6 +10,7 @@ class Agent:
         self.theta = theta
         self.range_scanner = RangeScanner(max_range=max_range, num_points=24)
         self.scan_points = []
+        self.average_state = np.zeros_like(self.pos)
 
     def random_update(self, grid_size):
         self.prev = np.array([self.pos[0], self.pos[1]])
@@ -33,6 +34,8 @@ class Agent:
     def update_state(self, new_state):
         self.prev = np.array([self.pos[0], self.pos[1]])
         self.pos = np.array([new_state[0], new_state[1]])
+
+        self.average_state = 0.05 * self.pos + 0.95 * self.average_state
 
     def measure(self, obstacles):
         self.scan_points = self.range_scanner.scan(self.pos, obstacles)

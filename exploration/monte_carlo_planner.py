@@ -160,15 +160,17 @@ class MonteCarloPlanner:
 
         scan_points = range_scanner.scan(random_state, self.world.obstacles)
 
+        score += np.square(np.linalg.norm(self.agent.average_state - random_state))
+
         for point in scan_points:
             
             if point[0] >= 0 and point[0] < self.world.grid_width and point[1] >= 0 and point[1] < self.world.grid_height:
 
                 # if point is closer than max_range, deduct score
                 if np.linalg.norm(point - random_state) < range_scanner.max_range:
-                    score -= 10
+                    score -= 20
                 else:
-                    score += 10
+                    score += 20
 
                 # if point is in unknown space, add score
                 if self.world.grid[int(point[0])][int(point[1])] == 0:
@@ -196,11 +198,12 @@ class MonteCarloPlanner:
         collision = False
         for obstacle in obstacles:
 
-            obstacle_size = obstacle[2]
-            obstacle_min_x = obstacle[0] - obstacle_size
-            obstacle_max_x = obstacle[0] + obstacle_size
-            obstacle_min_y = obstacle[1] - obstacle_size
-            obstacle_max_y = obstacle[1] + obstacle_size
+            obstacle_size_x = obstacle[2]
+            obstacle_size_y = obstacle[3]
+            obstacle_min_x = obstacle[0] - obstacle_size_x
+            obstacle_max_x = obstacle[0] + obstacle_size_x
+            obstacle_min_y = obstacle[1] - obstacle_size_y
+            obstacle_max_y = obstacle[1] + obstacle_size_y
 
             if position[0] > obstacle_min_x and position[0] < obstacle_max_x:
                 if position[1] > obstacle_min_y and position[1] < obstacle_max_y:

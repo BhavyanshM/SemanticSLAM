@@ -30,11 +30,12 @@ def plot_world_cv(world : World, agent : Agent, scale):
     
     for obstacle in world.obstacles:
 
-        obstacle_size = obstacle[2]
-        obstacle_min_x = obstacle[0] - obstacle_size
-        obstacle_max_x = obstacle[0] + obstacle_size
-        obstacle_min_y = obstacle[1] - obstacle_size
-        obstacle_max_y = obstacle[1] + obstacle_size
+        obstacle_size_x = obstacle[2]
+        obstacle_size_y = obstacle[3]
+        obstacle_min_x = obstacle[0] - obstacle_size_x
+        obstacle_max_x = obstacle[0] + obstacle_size_x
+        obstacle_min_y = obstacle[1] - obstacle_size_y
+        obstacle_max_y = obstacle[1] + obstacle_size_y
 
         world.grid[ obstacle_min_x:obstacle_max_x, obstacle_min_y:obstacle_max_y] = 100
 
@@ -52,6 +53,8 @@ def plot_world_cv(world : World, agent : Agent, scale):
     # Set the agent's position as 50
     grid_color[int(agent.prev[0]), int(agent.prev[1])] = np.array([0, 0, 0])
     grid_color[int(agent.pos[0]), int(agent.pos[1])] = np.array([0, 255, 255])
+
+    grid_color[int(agent.average_state[0]), int(agent.average_state[1])] = np.array([100, 100, 255])
 
     # Plot lidar scan points as filled red cells
     for point in agent.scan_points:
