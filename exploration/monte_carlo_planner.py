@@ -59,7 +59,7 @@ class MonteCarloPlanner:
 
             # adjust value for ancestor nodes upto the root
             child_node.value = score
-            self.backpropagate(node, score)
+            self.back_propagate(node, score)
             
         # if node is not a leaf node
         else:
@@ -180,7 +180,7 @@ class MonteCarloPlanner:
 
         return score
     
-    def backpropagate(self, node, score):
+    def back_propagate(self, node, score):
 
         # print("Backpropagating: ", node.state, score)
 
@@ -189,7 +189,7 @@ class MonteCarloPlanner:
         node.value += score
 
         if node.parent is not None:
-            self.backpropagate(node.parent, score)
+            self.back_propagate(node.parent, score)
 
     def check_action_obstacles(self, state, action, obstacles):
 

@@ -144,18 +144,6 @@ class RangeScanner:
 
         return good_point
 
-    def is_point_inside_obstacle(self, point, obstacle):
-        
-        obstacle_min_x = obstacle[0] - obstacle[2]
-        obstacle_max_x = obstacle[0] + obstacle[2]
-        obstacle_min_y = obstacle[1] - obstacle[3]
-        obstacle_max_y = obstacle[1] + obstacle[3]
-
-        if point[0] < obstacle_min_x or point[0] > obstacle_max_x or point[1] < obstacle_min_y or point[1] > obstacle_max_y:
-            return False
-        
-        return True
-
 
 if __name__ == "__main__":
     scanner = RangeScanner(max_range=100, num_points=48)
